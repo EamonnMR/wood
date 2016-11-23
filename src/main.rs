@@ -17,10 +17,6 @@ fn main() {
 }
 
 fn parse_line (source: String) -> ParseTreeNode {
-    //fn parse_list<'token_iter, I>(vals: I) -> ParseTreeNode
-    //        where I: Iterator<Item=String>
-    //{
-    // fn parse_list<'a>( &mut token_iter: std::str::Split<'a, &str> ) -> ParseTreeNode {
     fn parse_list( token_iter: &mut std::str::Split<&str> ) -> ParseTreeNode {
         let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
         match node {
