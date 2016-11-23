@@ -20,7 +20,8 @@ fn parse_line (source: String) -> ParseTreeNode {
     //fn parse_list<'token_iter, I>(vals: I) -> ParseTreeNode
     //        where I: Iterator<Item=String>
     //{
-    fn parse_list<'a>( token_iter: std::str::Split<'a, &str> ) -> ParseTreeNode {
+    // fn parse_list<'a>( &mut token_iter: std::str::Split<'a, &str> ) -> ParseTreeNode {
+    fn parse_list( token_iter: &mut std::str::Split<&str> ) -> ParseTreeNode {
         let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
         match node {
             ParseTreeNode::List(ref mut list) => {
@@ -56,5 +57,5 @@ fn parse_line (source: String) -> ParseTreeNode {
     // https://github.com/kballard/rfcs/blob/2d3ff42b821ab80bd6a7b3b8fda0e1c238cc7de0/active/0000-better-temporary-lifetimes.md
     let mut tokens = space_added_source.split(" ");
 
-    return parse_list( tokens );
+    return parse_list( &mut tokens );
 }
