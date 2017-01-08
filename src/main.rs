@@ -1,4 +1,6 @@
 use std::io;
+use std::collections::HashMap;
+use std::iter::Iterator;
 
 enum ParseTreeNode {
     Symbol(String),
@@ -6,8 +8,69 @@ enum ParseTreeNode {
     Int(i32)
 }
 
-fn print_node( node: &ParseTreeNode, depth: usize) {
+struct Scope {
+    parent: Box<Scope>,
+    locals: HashMap<String, ParseTreeNode>,
+}
+
+fn call( scope: &Scope, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+    let mut args_index = argv.iter();
+    let mut pop_int = || -> i32 {
+        // Apparently no matter what happens in the blocks, match returns () (?)
+        let mut rval: i32 = 0;
+        match args_index.next() {
+            Some(node) => {
+                match *node {
+                    ParseTreeNode::Int(int) => { rval = int; }
+                    _ => {
+                        // TODO: This should throw some sort of type checking error
+                    }
+                }
+            }
+            None => {}
+        }
+        rval
+    };
+
+    match fname {
+        "+" => { return ParseTreeNode::Int( pop_int() + pop_int() );}
+        _ => { return ParseTreeNode::Symbol(String::from("")); } // TODO: Also try functions in scope
+    }
+}
+
+fn call_node( node: &ParseTreeNode, scope: &Scope) -> ParseTreeNode {
+	match *node{
+        ParseTreeNode::Symbol(ref symbol) => {
+            // TODO: Find thing in scope
+            return ParseTreeNode::Symbol(symbol.to_owned());
+        }    
+        ParseTreeNode::Int(int) => {
+            return ParseTreeNode::Int(int);
+		}
+        ParseTreeNode::List(ref list) => {
+            if let Some((func_name, args)) = list.split_first() {
+                match *func_name {
+                    ParseTreeNode::Symbol( ref fname ) => {
+                        let v: Vec<ParseTreeNode> = list.iter().map(
+                            | x: &ParseTreeNode | -> ParseTreeNode { call_node(x, scope) }
+                        ).collect();
+                        return call( scope, fname, v);
+                    }
+                    _ => {
+                        // TODO: Print some sort of error
+                        return ParseTreeNode::Symbol( String::from("") );
+                    } 
+                }
+                
+            } else {
+                //.TODO: Some sort of error
+                return ParseTreeNode::Symbol( String::from("") );
+            }
+        }
+    }
+}
     
+fn print_node( node: &ParseTreeNode, depth: usize) {
     // https://users.rust-lang.org/t/fill-string-with-repeated-character/1121/3
     let indent = std::iter::repeat(" ").take(depth).collect::<String>();
 
@@ -62,7 +125,11 @@ fn parse_line (source: String) -> ParseTreeNode {
                     		} else if token == ")" {
                         		break;
                         	} else {
-		                        list.push( ParseTreeNode::Symbol( token.to_string() ));
+                                // Try to parse as int; if not, treat as symbol
+                                match token.parse::<i32>(){
+                                    Ok(ival) => {list.push(ParseTreeNode::Int( ival ));}
+                                    Err(..) => {list.push(ParseTreeNode::Symbol( token.to_string() ));}
+                                }
         		            }
 
 						}
