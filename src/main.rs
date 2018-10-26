@@ -2,6 +2,9 @@ use std::io;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
+// TODO: putting everything under a root node is breaking
+// because it is treating the whole program as a func call.
+
 enum ParseTreeNode {
     Symbol(String),
     List(Vec<ParseTreeNode>),
@@ -13,7 +16,7 @@ struct Scope {
     locals: HashMap<String, ParseTreeNode>,
 }
 
-fn call( scope: &Scope, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
     let mut args_index = argv.iter();
     let mut pop_int = || -> i32 {
         // Apparently no matter what happens in the blocks, match returns () (?)
@@ -38,7 +41,7 @@ fn call( scope: &Scope, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode 
     }
 }
 
-fn call_node( node: &ParseTreeNode, scope: &Scope) -> ParseTreeNode {
+fn eval( node: &ParseTreeNode) -> ParseTreeNode {
 	match *node{
         ParseTreeNode::Symbol(ref symbol) => {
             // TODO: Find thing in scope
@@ -52,18 +55,21 @@ fn call_node( node: &ParseTreeNode, scope: &Scope) -> ParseTreeNode {
                 match *func_name {
                     ParseTreeNode::Symbol( ref fname ) => {
                         let v: Vec<ParseTreeNode> = list.iter().map(
-                            | x: &ParseTreeNode | -> ParseTreeNode { call_node(x, scope) }
+                            | x: &ParseTreeNode | -> ParseTreeNode { eval(x) }
                         ).collect();
-                        return call( scope, fname, v);
+                        return function_call(fname, v);
                     }
                     _ => {
                         // TODO: Print some sort of error
+                        println!("cannot parse func name");
+                        print_node(&func_name, 0);
                         return ParseTreeNode::Symbol( String::from("") );
                     } 
                 }
                 
             } else {
                 //.TODO: Some sort of error
+                println!("Cannot parse fname and args from.");
                 return ParseTreeNode::Symbol( String::from("") );
             }
         }
@@ -99,7 +105,9 @@ fn main() {
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
-        print_node( &root_node, 0)
+        print_node( &root_node, 0);
+        let result = eval( &root_node );
+        print_node( &result, 0);
     }
 }
 
