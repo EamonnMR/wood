@@ -15,6 +15,7 @@ struct Scope {
 }
 
 fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+    println!("Number of args: {}", argv.len());
     let mut args_index = argv.iter();
     let mut pop_int = || -> i32 {
         // Apparently no matter what happens in the blocks, match returns () (?)
@@ -69,10 +70,12 @@ fn eval( node: &ParseTreeNode) -> ParseTreeNode {
 		}
         ParseTreeNode::List(ref list) => {
             if let Some((func_name, args)) = list.split_first() {
+                // TODO: Eval func_name before extracting fname
                 match *func_name {
                     ParseTreeNode::Symbol( ref fname ) => {
                         println!("evaluating function: {}", fname);
-                        let v: Vec<ParseTreeNode> = list.iter().map(
+                        // TODO: Don't eval args here
+                        let v: Vec<ParseTreeNode> = args.iter().map(
                             | x: &ParseTreeNode | -> ParseTreeNode { eval(x) }
                         ).collect();
                         return function_call(fname, v);
