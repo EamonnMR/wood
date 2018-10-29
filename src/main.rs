@@ -2,13 +2,11 @@ use std::io;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-// TODO: putting everything under a root node is breaking
-// because it is treating the whole program as a func call.
-
 enum ParseTreeNode {
     Symbol(String),
     List(Vec<ParseTreeNode>),
-    Int(i32)
+    Int(i32),
+    Nil(bool),
 }
 
 struct Scope {
@@ -43,6 +41,11 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
 
 fn eval( node: &ParseTreeNode) -> ParseTreeNode {
 	match *node{
+        ParseTreeNode::Nil(ref nothing) => {
+            println!("Error: nil node made it into the final parse tree");
+            // Just returning something to satisfy the compiler
+            return ParseTreeNode::Nil(*nothing);
+        }
         ParseTreeNode::Symbol(ref symbol) => {
             // TODO: Find thing in scope
             return ParseTreeNode::Symbol(symbol.to_owned());
@@ -95,6 +98,9 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
             }
             println!("{})", indent);
         }
+        ParseTreeNode::Nil(ref nothing) => {
+            println!("{}# Nil Node", indent);
+        }
     }
 }
 
@@ -112,42 +118,54 @@ fn main() {
 }
 
 fn parse_line (source: String) -> ParseTreeNode {
+
+    fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (ParseTreeNode, bool) {
+        // Returns a parse tree node if one was found, and "true" if it's a list terminator.
+        let token_option = token_iter.next();
+
+        match token_option {
+            None => {
+                println!("EOF");
+                (ParseTreeNode::Nil(false), true)
+            } // TODO: Crash - expecting close paren
+
+            Some( token ) => {
+                // println!( "{}",  token);
+
+                if token == "(" {
+                    return (parse_list( token_iter ), false);
+                } else if token == ")" {
+                    return (ParseTreeNode::Nil(false), true);
+                } else {
+                    // Try to parse as int; if not, treat as symbol
+                    match token.parse::<i32>(){
+                        Ok(ival) => {
+                            return (ParseTreeNode::Int( ival ), false);
+                        }
+                        Err(..) => {
+                            return (ParseTreeNode::Symbol( token.to_string() ), false);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> ParseTreeNode {
         let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
         match node {
             ParseTreeNode::List(ref mut list) => {
 	        	loop {
-    		        let token_option = token_iter.next();
-
-                    match token_option {
-                        None => break, // TODO: Crash - expecting close paren
-
-                        Some( token ) => {
-
-                            // println!( "{}",  token);
-
-							if token == " " {
-                        		continue;
-                    		} else if token == "(" {
-                        		list.push( parse_list( token_iter ) );
-                    		} else if token == ")" {
-                        		break;
-                        	} else {
-                                // Try to parse as int; if not, treat as symbol
-                                match token.parse::<i32>(){
-                                    Ok(ival) => {list.push(ParseTreeNode::Int( ival ));}
-                                    Err(..) => {list.push(ParseTreeNode::Symbol( token.to_string() ));}
-                                }
-        		            }
-
-						}
+                    let (list_node, is_terminator) = parse_node(token_iter);
+                    if is_terminator {
+                        break;
+                    } else {
+                        list.push(list_node);
                     }
-        		}
+                }
             }
             _ => ()
-
         }
-
         return node;
     }
 
@@ -155,5 +173,7 @@ fn parse_line (source: String) -> ParseTreeNode {
     // https://github.com/kballard/rfcs/blob/2d3ff42b821ab80bd6a7b3b8fda0e1c238cc7de0/active/0000-better-temporary-lifetimes.md
     let mut tokens = space_added_source.split_whitespace();
 
-    return parse_list( &mut tokens );
+    let (node, _) = parse_node( &mut tokens );
+    return node;
 }
+
