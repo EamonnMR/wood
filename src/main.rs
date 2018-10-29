@@ -22,20 +22,32 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
         match args_index.next() {
             Some(node) => {
                 match *node {
-                    ParseTreeNode::Int(int) => { rval = int; }
+                    ParseTreeNode::Int(int) => { 
+                        println!("pop int got {}", int);
+                        rval = int;
+                    }
                     _ => {
+                        println!("Arg error: wanted int");
                         // TODO: This should throw some sort of type checking error
                     }
                 }
             }
             None => {}
         }
-        rval
+        println!("returning: {}", rval);
+        return rval
     };
 
     match fname {
-        "+" => { return ParseTreeNode::Int( pop_int() + pop_int() );}
-        _ => { return ParseTreeNode::Symbol(String::from("")); } // TODO: Also try functions in scope
+        "+" => {
+            println!("plus");
+
+            return ParseTreeNode::Int( pop_int() + pop_int() );
+        }
+        _ => {
+            println!("unknown func {}", fname);
+            return ParseTreeNode::Symbol(String::from(""));
+        } // TODO: Also try functions in scope
     }
 }
 
@@ -47,16 +59,19 @@ fn eval( node: &ParseTreeNode) -> ParseTreeNode {
             return ParseTreeNode::Nil(*nothing);
         }
         ParseTreeNode::Symbol(ref symbol) => {
+            println!("Eval symbol: {}", symbol);
             // TODO: Find thing in scope
             return ParseTreeNode::Symbol(symbol.to_owned());
         }    
         ParseTreeNode::Int(int) => {
+            println!("Eval int: {}", int);
             return ParseTreeNode::Int(int);
 		}
         ParseTreeNode::List(ref list) => {
             if let Some((func_name, args)) = list.split_first() {
                 match *func_name {
                     ParseTreeNode::Symbol( ref fname ) => {
+                        println!("evaluating function: {}", fname);
                         let v: Vec<ParseTreeNode> = list.iter().map(
                             | x: &ParseTreeNode | -> ParseTreeNode { eval(x) }
                         ).collect();
