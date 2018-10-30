@@ -8,17 +8,41 @@ enum ParseTreeNode {
     Int(i32),
     Nil(bool),
 }
-
+/*
 struct Scope {
-    parent: Box<Scope>,
+    parent: Option<Box<Scope>>,
     locals: HashMap<String, ParseTreeNode>,
 }
 
+fn get(scope: Scope, key: String) -> ParseTreeNode {
+    // gets a node from the scope, or Nil if it is not found.
+    match scope.locals.get(&key) {
+        Some(node) => {
+            return *node;
+        }
+        None  => {
+            match scope.parent {
+                Some(parent) => {
+                    return get(*parent, key);
+                }
+                None => {
+                    // bad bad very not good
+                    // we need better nil handling
+                    return ParseTreeNode::Nil(false);
+                }
+            }
+        }
+    }
+}
+
+fn set(scope: Scope, key: String, value: ParseTreeNode){
+    scope.locals.insert(key, value);
+}
+*/
 fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
     println!("Number of args: {}", argv.len());
     let mut args_index = argv.iter();
     let mut pop_int = || -> i32 {
-        // Apparently no matter what happens in the blocks, match returns () (?)
         let mut rval: i32 = 0;
         match args_index.next() {
             Some(node) => {
@@ -124,6 +148,7 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
 
 fn main() {
     println!("Atmos 0.0.1");
+    // let mut root_scope = Scope {parent: None, locals: HashMap::new()};
     loop {
         let mut inputline = String::new();
         io::stdin().read_line(&mut inputline)
@@ -131,9 +156,7 @@ fn main() {
         let root_node = parse_line ( inputline );
         print_node( &root_node, 0);
         let result = eval( &root_node );
-        print_node( &result, 0);
-    }
-}
+        print_node( &result, 0);}}
 
 fn parse_line (source: String) -> ParseTreeNode {
 
