@@ -2,13 +2,14 @@ use std::io;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
+#[derive(Clone)]
 enum ParseTreeNode {
     Symbol(String),
     List(Vec<ParseTreeNode>),
     Int(i32),
     Nil(bool),
 }
-/*
+
 struct Scope {
     parent: Option<Box<Scope>>,
     locals: HashMap<String, ParseTreeNode>,
@@ -18,7 +19,7 @@ fn get(scope: Scope, key: String) -> ParseTreeNode {
     // gets a node from the scope, or Nil if it is not found.
     match scope.locals.get(&key) {
         Some(node) => {
-            return *node;
+            return node.to_owned();
         }
         None  => {
             match scope.parent {
@@ -35,10 +36,10 @@ fn get(scope: Scope, key: String) -> ParseTreeNode {
     }
 }
 
-fn set(scope: Scope, key: String, value: ParseTreeNode){
+fn set(mut scope: Scope, key: String, value: ParseTreeNode){
     scope.locals.insert(key, value);
 }
-*/
+
 fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
     println!("Number of args: {}", argv.len());
     let mut args_index = argv.iter();
