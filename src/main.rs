@@ -15,9 +15,9 @@ struct Scope {
     locals: HashMap<String, ParseTreeNode>,
 }
 
-fn get(scope: Scope, key: String) -> ParseTreeNode {
+fn get(scope: Scope, key: &String) -> ParseTreeNode {
     // gets a node from the scope, or Nil if it is not found.
-    match scope.locals.get(&key) {
+    match scope.locals.get(key) {
         Some(node) => {
             return node.to_owned();
         }
@@ -40,35 +40,46 @@ fn set(mut scope: Scope, key: String, value: ParseTreeNode){
     scope.locals.insert(key, value);
 }
 
-fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
-    println!("Number of args: {}", argv.len());
-    let mut args_index = argv.iter();
-    let mut pop_int = || -> i32 {
-        let mut rval: i32 = 0;
-        match args_index.next() {
-            Some(node) => {
-                match *node {
-                    ParseTreeNode::Int(int) => { 
-                        println!("pop int got {}", int);
-                        rval = int;
-                    }
-                    _ => {
-                        println!("Arg error: wanted int");
-                        // TODO: This should throw some sort of type checking error
-                    }
-                }
-            }
-            None => {}
+fn expect_int(node: ParseTreeNode) -> i32 {
+    let mut rval: i32;
+    match node {
+        ParseTreeNode::Int(int) => {
+            return int;
         }
-        println!("returning: {}", rval);
-        return rval
+        _ => {
+            println!("Expected an int, got: ");
+            return 0;
+        }
+    }
+}
+
+
+fn function_call( fname: &str, argv: Vec<ParseTreeNode>, mut scope: Scope) -> ParseTreeNode {
+    let mut args_index = argv.iter();
+
+    let mut expect_arg = || -> ParseTreeNode {
+
+        match args_index.next() {
+
+            Some(node) => {
+                return *node;
+            }
+            None => {
+                println!("Expected an additional argument");
+                return ParseTreeNode::Nil(false);
+            }
+        }
     };
 
     match fname {
         "+" => {
             println!("plus");
 
-            return ParseTreeNode::Int( pop_int() + pop_int() );
+            return ParseTreeNode::Int(
+                expect_int(eval(scope, &expect_arg()))
+                +
+                expect_int(eval(scope, &expect_arg()))
+            );
         }
         _ => {
             println!("unknown func {}", fname);
@@ -77,7 +88,7 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
     }
 }
 
-fn eval( node: &ParseTreeNode) -> ParseTreeNode {
+fn eval(mut scope: Scope,  node: &ParseTreeNode) -> ParseTreeNode {
 	match *node{
         ParseTreeNode::Nil(ref nothing) => {
             println!("Error: nil node made it into the final parse tree");
@@ -86,8 +97,9 @@ fn eval( node: &ParseTreeNode) -> ParseTreeNode {
         }
         ParseTreeNode::Symbol(ref symbol) => {
             println!("Eval symbol: {}", symbol);
-            // TODO: Find thing in scope
-            return ParseTreeNode::Symbol(symbol.to_owned());
+            return get(scope, symbol);
+            // TODO: Should symbols eval to themselves if they're not in scope?
+            // return ParseTreeNode::Symbol(symbol.to_owned());
         }    
         ParseTreeNode::Int(int) => {
             println!("Eval int: {}", int);
@@ -95,15 +107,15 @@ fn eval( node: &ParseTreeNode) -> ParseTreeNode {
 		}
         ParseTreeNode::List(ref list) => {
             if let Some((func_name, args)) = list.split_first() {
-                // TODO: Eval func_name before extracting fname
+                // TODO: Eval func_name before extracting fname - ?
                 match *func_name {
                     ParseTreeNode::Symbol( ref fname ) => {
                         println!("evaluating function: {}", fname);
-                        // TODO: Don't eval args here
-                        let v: Vec<ParseTreeNode> = args.iter().map(
-                            | x: &ParseTreeNode | -> ParseTreeNode { eval(x) }
-                        ).collect();
-                        return function_call(fname, v);
+                        // TODO: Custom functions may need something like this:
+                        //let v: Vec<ParseTreeNode> = args.iter().map(
+                        //    | x: &ParseTreeNode | -> ParseTreeNode { eval(scope, x) }
+                        //).collect();
+                        return function_call(fname, args.to_vec(), scope);
                     }
                     _ => {
                         // TODO: Print some sort of error
@@ -159,7 +171,7 @@ fn main() {
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
         print_node( &root_node, 0);
-        let result = eval( &root_node );
+        let result = eval( root_scope, &root_node );
         print_node( &result, 0);}}
 
 fn parse_line (source: String) -> ParseTreeNode {
