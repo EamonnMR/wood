@@ -22,9 +22,8 @@ fn get(scope: &Scope, key: &String) -> ParseTreeNode {
             return node.to_owned();
         }
         None  => {
-            /*
             match scope.parent {
-                Some(parent) => {
+                Some(ref parent) => {
                     return get(&parent, key);
                 }
                 None => {
@@ -33,8 +32,6 @@ fn get(scope: &Scope, key: &String) -> ParseTreeNode {
                     return ParseTreeNode::Nil(false);
                 }
             }
-            */
-            return ParseTreeNode::Nil(false);
         }
     }
 }
