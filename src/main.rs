@@ -15,16 +15,17 @@ struct Scope {
     locals: HashMap<String, ParseTreeNode>,
 }
 
-fn get(scope: Scope, key: &String) -> ParseTreeNode {
+fn get(scope: &Scope, key: &String) -> ParseTreeNode {
     // gets a node from the scope, or Nil if it is not found.
     match scope.locals.get(key) {
         Some(node) => {
             return node.to_owned();
         }
         None  => {
+            /*
             match scope.parent {
                 Some(parent) => {
-                    return get(*parent, key);
+                    return get(&parent, key);
                 }
                 None => {
                     // bad bad very not good
@@ -32,6 +33,8 @@ fn get(scope: Scope, key: &String) -> ParseTreeNode {
                     return ParseTreeNode::Nil(false);
                 }
             }
+            */
+            return ParseTreeNode::Nil(false);
         }
     }
 }
@@ -54,7 +57,7 @@ fn expect_int(node: ParseTreeNode) -> i32 {
 }
 
 
-fn function_call( fname: &str, argv: Vec<ParseTreeNode>, mut scope: Scope) -> ParseTreeNode {
+fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> ParseTreeNode {
     let mut args_index = argv.iter();
 
     let mut expect_arg = || -> ParseTreeNode {
@@ -62,7 +65,7 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, mut scope: Scope) -> Pa
         match args_index.next() {
 
             Some(node) => {
-                return *node;
+                return node.to_owned();
             }
             None => {
                 println!("Expected an additional argument");
@@ -88,7 +91,7 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, mut scope: Scope) -> Pa
     }
 }
 
-fn eval(mut scope: Scope,  node: &ParseTreeNode) -> ParseTreeNode {
+fn eval(scope: &mut Scope,  node: &ParseTreeNode) -> ParseTreeNode {
 	match *node{
         ParseTreeNode::Nil(ref nothing) => {
             println!("Error: nil node made it into the final parse tree");
@@ -171,7 +174,7 @@ fn main() {
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
         print_node( &root_node, 0);
-        let result = eval( root_scope, &root_node );
+        let result = eval( &mut root_scope, &root_node );
         print_node( &result, 0);}}
 
 fn parse_line (source: String) -> ParseTreeNode {
