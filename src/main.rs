@@ -105,6 +105,16 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
 
             return ParseTreeNode::Symbol( symbol.to_owned());
         }
+
+        "locals" => {
+            println!("locals");
+            println!("(special builtin to debug)");
+            for (key, value) in scope.locals.iter(){
+                println!("{}: ", key);
+                print_node(value, 20);
+            }
+            return ParseTreeNode::Nil(true);
+        }
         _ => {
             println!("unknown func {}", fname);
             return ParseTreeNode::Symbol(String::from(""));
@@ -182,7 +192,6 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
         }
     }
 }
-
 fn main() {
     println!("Atmos 0.0.1");
     // let mut root_scope = Scope {parent: None, locals: HashMap::new()};
