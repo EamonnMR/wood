@@ -36,19 +36,32 @@ fn get(scope: &Scope, key: &String) -> ParseTreeNode {
     }
 }
 
-fn set(mut scope: Scope, key: String, value: ParseTreeNode){
+fn set(scope: &mut Scope, key: String, value: ParseTreeNode){
     scope.locals.insert(key, value);
 }
 
 fn expect_int(node: ParseTreeNode) -> i32 {
-    let mut rval: i32;
     match node {
         ParseTreeNode::Int(int) => {
             return int;
         }
         _ => {
             println!("Expected an int, got: ");
+            print_node(&node, 20);
             return 0;
+        }
+    }
+}
+
+fn expect_symbol(node: ParseTreeNode) -> String {
+    match node {
+        ParseTreeNode::Symbol(string) => {
+            return string;
+        }
+        _ => {
+            println!("Expected a string, got: ");
+            print_node(&node, 20);
+            return String::from("");
         }
     }
 }
@@ -80,6 +93,17 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
                 +
                 expect_int(eval(scope, &expect_arg()))
             );
+        }
+        "define" => {
+            println!("define");
+            let symbol = expect_symbol(expect_arg());
+            set(
+                scope,
+                symbol.to_owned(),
+                expect_arg(),
+            );
+
+            return ParseTreeNode::Symbol( symbol.to_owned());
         }
         _ => {
             println!("unknown func {}", fname);
@@ -153,7 +177,7 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
             }
             println!("{})", indent);
         }
-        ParseTreeNode::Nil(ref nothing) => {
+        ParseTreeNode::Nil(ref _nothing) => {
             println!("{}# Nil Node", indent);
         }
     }
