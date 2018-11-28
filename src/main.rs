@@ -195,10 +195,12 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
 fn main() {
     println!("Atmos 0.0.1");
     // let mut root_scope = Scope {parent: None, locals: HashMap::new()};
-    loop {
-        let mut root_scope = Scope {
+    let mut root_scope = Scope {
             parent: None,
-            locals: HashMap::new()};
+            locals: HashMap::new()
+    };
+
+    loop {
         let mut inputline = String::new();
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
