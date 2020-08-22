@@ -115,6 +115,11 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
             }
             return ParseTreeNode::Nil(true);
         }
+        
+        "quote" => {
+            return expect_arg();
+        }
+
         _ => {
             println!("unknown func {}", fname);
             return ParseTreeNode::Symbol(String::from(""));
@@ -193,7 +198,7 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
     }
 }
 fn main() {
-    println!("Atmos 0.0.1");
+    println!("Wood 0.0.1");
     // let mut root_scope = Scope {parent: None, locals: HashMap::new()};
     let mut root_scope = Scope {
             parent: None,
