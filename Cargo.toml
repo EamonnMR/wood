@@ -1,5 +1,5 @@
 [package]
-
-name = "atmos"
+edition="2018"
+name = "wood"
 version = "0.0.1"
 authors = [ "Eamonn McHugh-Roohr <eamonn.m.r@gmail.com>" ]
