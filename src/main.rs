@@ -7,12 +7,23 @@ enum ParseTreeNode {
     Symbol(String),
     List(Vec<ParseTreeNode>),
     Int(i32),
-    Nil(bool),
+    Nil,
+    Function{
+        params: Vec<ParseTreeNode>,
+        proc: Vec<ParseTreeNode>
+    }
 }
 
 struct Scope {
     parent: Option<Box<Scope>>,
     locals: HashMap<String, ParseTreeNode>,
+}
+
+fn preprocess_source(source: String) -> String {
+    // add spaces around parens so they are tokenized
+    source
+        .replace("(", " ( ")
+        .replace(")", " ) ")
 }
 
 fn get(scope: &Scope, key: &String) -> ParseTreeNode {
@@ -29,7 +40,7 @@ fn get(scope: &Scope, key: &String) -> ParseTreeNode {
                 None => {
                     // bad bad very not good
                     // we need better nil handling
-                    return ParseTreeNode::Nil(false);
+                    return ParseTreeNode::Nil;
                 }
             }
         }
@@ -38,6 +49,19 @@ fn get(scope: &Scope, key: &String) -> ParseTreeNode {
 
 fn set(scope: &mut Scope, key: String, value: ParseTreeNode){
     scope.locals.insert(key, value);
+}
+
+fn expect_list(node: ParseTreeNode) -> Vec<ParseTreeNode> {
+    match node {
+        ParseTreeNode::List(list) => {
+            return list;
+        }
+        _ => {
+            println!("Expected list, got: ");
+            print_node(&node, 20);
+            return Vec::<ParseTreeNode>::new()
+        }
+    }
 }
 
 fn expect_int(node: ParseTreeNode) -> i32 {
@@ -79,7 +103,7 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
             }
             None => {
                 println!("Expected an additional argument");
-                return ParseTreeNode::Nil(false);
+                return ParseTreeNode::Nil;
             }
         }
     };
@@ -113,11 +137,19 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
                 println!("{}: ", key);
                 print_node(value, 20);
             }
-            return ParseTreeNode::Nil(true);
+            return ParseTreeNode::Nil;
         }
         
         "quote" => {
             return expect_arg();
+        }
+        
+        "lambda" => {
+            return ParseTreeNode::Function{
+                // TODO: expect_list)
+                params: expect_list(expect_arg()),
+                proc: expect_list(expect_arg()),
+            }
         }
 
         _ => {
@@ -129,17 +161,20 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
 
 fn eval(scope: &mut Scope,  node: &ParseTreeNode) -> ParseTreeNode {
 	match *node{
-        ParseTreeNode::Nil(ref nothing) => {
+        ParseTreeNode::Nil=> {
             println!("Error: nil node made it into the final parse tree");
             // Just returning something to satisfy the compiler
-            return ParseTreeNode::Nil(*nothing);
+            return ParseTreeNode::Nil;
         }
         ParseTreeNode::Symbol(ref symbol) => {
             println!("Eval symbol: {}", symbol);
             return get(scope, symbol);
             // TODO: Should symbols eval to themselves if they're not in scope?
             // return ParseTreeNode::Symbol(symbol.to_owned());
-        }    
+        }
+        ParseTreeNode::Function { ref params, ref proc } => {
+            return ParseTreeNode::Nil;
+        }
         ParseTreeNode::Int(int) => {
             println!("Eval int: {}", int);
             return ParseTreeNode::Int(int);
@@ -192,7 +227,19 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
             }
             println!("{})", indent);
         }
-        ParseTreeNode::Nil(ref _nothing) => {
+        ParseTreeNode::Function { ref params, ref proc } => {
+            println!("Lambda args (");
+            for node in params {
+                print_node( node, depth + 1);
+            }
+            println!(") proc: ");
+            for node in params {
+                print_node( node, depth + 1);
+            }
+            println!(")");
+            
+        }
+        ParseTreeNode::Nil  => {
             println!("{}# Nil Node", indent);
         }
     }
@@ -223,7 +270,7 @@ fn parse_line (source: String) -> ParseTreeNode {
         match token_option {
             None => {
                 println!("EOF");
-                (ParseTreeNode::Nil(false), true)
+                (ParseTreeNode::Nil, true)
             } // TODO: Crash - expecting close paren
 
             Some( token ) => {
@@ -232,7 +279,7 @@ fn parse_line (source: String) -> ParseTreeNode {
                 if token == "(" {
                     return (parse_list( token_iter ), false);
                 } else if token == ")" {
-                    return (ParseTreeNode::Nil(false), true);
+                    return (ParseTreeNode::Nil, true);
                 } else {
                     // Try to parse as int; if not, treat as symbol
                     match token.parse::<i32>(){
@@ -266,9 +313,8 @@ fn parse_line (source: String) -> ParseTreeNode {
         return node;
     }
 
-    let space_added_source = source.replace("(", " ( ").replace(")", " ) ");
-    // https://github.com/kballard/rfcs/blob/2d3ff42b821ab80bd6a7b3b8fda0e1c238cc7de0/active/0000-better-temporary-lifetimes.md
-    let mut tokens = space_added_source.split_whitespace();
+    let preproc = preprocess_source(source);
+    let mut tokens = preproc.split_whitespace();
 
     let (node, _) = parse_node( &mut tokens );
     return node;
