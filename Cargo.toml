@@ -3,3 +3,12 @@ edition="2018"
 name = "wood"
 version = "0.0.1"
 authors = [ "Eamonn McHugh-Roohr <eamonn.m.r@gmail.com>" ]
+
+#[lib]
+#name = "wood_embed"
+#path = "src/lib.rs"
+
+[[bin]]
+name = "wood"
+path = "src/main.rs"
+

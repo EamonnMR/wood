@@ -2,28 +2,15 @@ use std::io;
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-#[derive(Clone)]
-enum ParseTreeNode {
-    Symbol(String),
-    List(Vec<ParseTreeNode>),
-    Int(i32),
-    Nil,
-    Function{
-        params: Vec<ParseTreeNode>,
-        proc: Vec<ParseTreeNode>
-    }
-}
+mod node;
+mod parse;
+
+pub use crate::node::ParseTreeNode;
+pub use crate::parse::parse_line;
 
 struct Scope {
     parent: Option<Box<Scope>>,
     locals: HashMap<String, ParseTreeNode>,
-}
-
-fn preprocess_source(source: String) -> String {
-    // add spaces around parens so they are tokenized
-    source
-        .replace("(", " ( ")
-        .replace(")", " ) ")
 }
 
 fn get(scope: &Scope, key: &String) -> ParseTreeNode {
@@ -254,9 +241,9 @@ fn print_node( node: &ParseTreeNode, depth: usize) {
         }
     }
 }
+
 fn main() {
     println!("Wood 0.0.1");
-    // let mut root_scope = Scope {parent: None, locals: HashMap::new()};
     let mut root_scope = Scope {
             parent: None,
             locals: HashMap::new()
@@ -269,64 +256,7 @@ fn main() {
         let root_node = parse_line ( inputline );
         print_node( &root_node, 0);
         let result = eval( &mut root_scope, &root_node );
-        print_node( &result, 0);}}
-
-fn parse_line (source: String) -> ParseTreeNode {
-
-    fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (ParseTreeNode, bool) {
-        // Returns a parse tree node if one was found, and "true" if it's a list terminator.
-        let token_option = token_iter.next();
-
-        match token_option {
-            None => {
-                println!("EOF");
-                (ParseTreeNode::Nil, true)
-            } // TODO: Crash - expecting close paren
-
-            Some( token ) => {
-                // println!( "{}",  token);
-
-                if token == "(" {
-                    return (parse_list( token_iter ), false);
-                } else if token == ")" {
-                    return (ParseTreeNode::Nil, true);
-                } else {
-                    // Try to parse as int; if not, treat as symbol
-                    match token.parse::<i32>(){
-                        Ok(ival) => {
-                            return (ParseTreeNode::Int( ival ), false);
-                        }
-                        Err(..) => {
-                            return (ParseTreeNode::Symbol( token.to_string() ), false);
-                        }
-                    }
-                }
-            }
-        }
+        print_node( &result, 0);
     }
-
-    fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> ParseTreeNode {
-        let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
-        match node {
-            ParseTreeNode::List(ref mut list) => {
-	        	loop {
-                    let (list_node, is_terminator) = parse_node(token_iter);
-                    if is_terminator {
-                        break;
-                    } else {
-                        list.push(list_node);
-                    }
-                }
-            }
-            _ => ()
-        }
-        return node;
-    }
-
-    let preproc = preprocess_source(source);
-    let mut tokens = preproc.split_whitespace();
-
-    let (node, _) = parse_node( &mut tokens );
-    return node;
 }
 
