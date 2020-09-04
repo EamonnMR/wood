@@ -121,10 +121,11 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
         "define" => {
             println!("define");
             let symbol = expect_symbol(expect_arg());
+            let value = eval(scope, &expect_arg());
             set(
                 scope,
                 symbol.to_owned(),
-                expect_arg(),
+                value,
             );
 
             return ParseTreeNode::Symbol( symbol.to_owned());
@@ -153,9 +154,18 @@ fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> P
         }
 
         _ => {
-            println!("unknown func {}", fname);
+            let possible_func = get(scope, &String::from(fname));
+            match possible_func{
+                ParseTreeNode::Function { params, proc } => {
+                    println!( "Would call function" );
+                }
+                _ => {
+                    println!( "expected function, got");
+                    print_node( &possible_func, 3)
+                }
+            }
             return ParseTreeNode::Symbol(String::from(""));
-        } // TODO: Also try functions in scope
+        }
     }
 }
 
