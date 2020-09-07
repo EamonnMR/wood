@@ -1,5 +1,4 @@
 use std::io;
-use std::collections::HashMap;
 
 mod node;
 mod parse;
@@ -11,7 +10,6 @@ pub use crate::node::ParseTreeNode;
 // pub use crate::node::print_node;
 pub use crate::parse::parse_line;
 pub use crate::scope::Scope;
-pub use crate::eval::eval;
 
 
 fn main() {
@@ -24,7 +22,7 @@ fn main() {
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
         root_node.print_node(0);
-        let result = eval( &mut root_scope, &root_node );
+        let result = root_scope.eval(&root_node );
         result.print_node(0);
 
     }

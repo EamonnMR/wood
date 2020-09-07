@@ -4,7 +4,6 @@ use crate::node::expect_int;
 use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
-use crate::eval::eval;
 
 pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> ParseTreeNode {
     let mut args_index = argv.iter();
@@ -28,15 +27,15 @@ pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) 
             println!("plus");
 
             return ParseTreeNode::Int(
-                expect_int(eval(scope, &expect_arg()))
+                expect_int(scope.eval(&expect_arg()))
                 +
-                expect_int(eval(scope, &expect_arg()))
+                expect_int(scope.eval(&expect_arg()))
             );
         }
         "define" => {
             println!("define");
             let symbol = expect_symbol(expect_arg());
-            let value = eval(scope, &expect_arg());
+            let value = scope.eval(&expect_arg());
             scope.set(
                 symbol.to_owned(),
                 value,
