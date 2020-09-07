@@ -1,6 +1,4 @@
 use crate::scope::Scope;
-use crate::scope::get;
-use crate::scope::set;
 use crate::node::ParseTreeNode;
 // use crate::node::print_node;
 use crate::func::function_call;
@@ -14,7 +12,7 @@ pub fn eval(scope: &mut Scope,  node: &ParseTreeNode) -> ParseTreeNode {
         }
         ParseTreeNode::Symbol(ref symbol) => {
             println!("Eval symbol: {}", symbol);
-            return get(scope, symbol);
+            return scope.get(symbol);
             // TODO: Should symbols eval to themselves if they're not in scope?
             // return ParseTreeNode::Symbol(symbol.to_owned());
         }

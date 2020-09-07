@@ -11,19 +11,13 @@ pub use crate::node::ParseTreeNode;
 // pub use crate::node::print_node;
 pub use crate::parse::parse_line;
 pub use crate::scope::Scope;
-pub use crate::scope::get;
-pub use crate::scope::set;
 pub use crate::eval::eval;
 
 
 fn main() {
     // REPL
     println!("Wood 0.0.1");
-    let mut root_scope = Scope {
-            parent: None,
-            locals: HashMap::new()
-    };
-
+    let mut root_scope = Scope::new();
     loop {
         let mut inputline = String::new();
         io::stdin().read_line(&mut inputline)

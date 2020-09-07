@@ -5,9 +5,6 @@ use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 use crate::eval::eval;
-// use crate::node::print_node;
-use crate::scope::get;
-use crate::scope::set;
 
 pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> ParseTreeNode {
     let mut args_index = argv.iter();
@@ -40,8 +37,7 @@ pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) 
             println!("define");
             let symbol = expect_symbol(expect_arg());
             let value = eval(scope, &expect_arg());
-            set(
-                scope,
+            scope.set(
                 symbol.to_owned(),
                 value,
             );
@@ -72,7 +68,7 @@ pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) 
         }
 
         _ => {
-            let possible_func = get(scope, &String::from(fname));
+            let possible_func = scope.get(&String::from(fname));
             match possible_func{
                 ParseTreeNode::Function { params, proc } => {
                     println!( "Would call function" );
