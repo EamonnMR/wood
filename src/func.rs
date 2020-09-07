@@ -5,81 +5,82 @@ use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 
-pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) -> ParseTreeNode {
-    let mut args_index = argv.iter();
+impl Scope {
+    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+        let mut args_index = argv.iter();
 
-    let mut expect_arg = || -> ParseTreeNode {
+        let mut expect_arg = || -> ParseTreeNode {
 
-        match args_index.next() {
+            match args_index.next() {
 
-            Some(node) => {
-                return node.to_owned();
+                Some(node) => {
+                    return node.to_owned();
+                }
+                None => {
+                    println!("Expected an additional argument");
+                    return ParseTreeNode::Nil;
+                }
             }
-            None => {
-                println!("Expected an additional argument");
+        };
+
+        match fname {
+            "+" => {
+                println!("plus");
+
+                return ParseTreeNode::Int(
+                    expect_int(self.eval(&expect_arg()))
+                    +
+                    expect_int(self.eval(&expect_arg()))
+                );
+            }
+            "define" => {
+                println!("define");
+                let symbol = expect_symbol(expect_arg());
+                let value = self.eval(&expect_arg());
+                self.set(
+                    symbol.to_owned(),
+                    value,
+                );
+
+                return ParseTreeNode::Symbol( symbol.to_owned());
+            }
+
+            "locals" => {
+                println!("locals");
+                println!("(special builtin to debug)");
+                for (key, value) in self.locals.iter(){
+                    println!("{}: ", key);
+                    value.print_node(20);
+                }
                 return ParseTreeNode::Nil;
             }
-        }
-    };
-
-    match fname {
-        "+" => {
-            println!("plus");
-
-            return ParseTreeNode::Int(
-                expect_int(scope.eval(&expect_arg()))
-                +
-                expect_int(scope.eval(&expect_arg()))
-            );
-        }
-        "define" => {
-            println!("define");
-            let symbol = expect_symbol(expect_arg());
-            let value = scope.eval(&expect_arg());
-            scope.set(
-                symbol.to_owned(),
-                value,
-            );
-
-            return ParseTreeNode::Symbol( symbol.to_owned());
-        }
-
-        "locals" => {
-            println!("locals");
-            println!("(special builtin to debug)");
-            for (key, value) in scope.locals.iter(){
-                println!("{}: ", key);
-                value.print_node(20);
+            
+            "quote" => {
+                return expect_arg();
             }
-            return ParseTreeNode::Nil;
-        }
-        
-        "quote" => {
-            return expect_arg();
-        }
-        
-        "lambda" => {
-            return ParseTreeNode::Function{
-                // TODO: expect_list)
-                params: expect_list(expect_arg()),
-                proc: expect_list(expect_arg()),
-            }
-        }
-
-        _ => {
-            let possible_func = scope.get(&String::from(fname));
-            match possible_func{
-                ParseTreeNode::Function { params, proc } => {
-                    println!( "Would call function" );
-                }
-                _ => {
-                    println!( "expected function, got");
-                    possible_func.print_node( 3 )
+            
+            "lambda" => {
+                return ParseTreeNode::Function{
+                    // TODO: expect_list)
+                    params: expect_list(expect_arg()),
+                    proc: expect_list(expect_arg()),
                 }
             }
-            return ParseTreeNode::Symbol(String::from(""));
+
+            _ => {
+                let possible_func = self.get(&String::from(fname));
+                match possible_func{
+                    ParseTreeNode::Function { params, proc } => {
+                        println!( "Would call function" );
+                    }
+                    _ => {
+                        println!( "expected function, got");
+                        possible_func.print_node( 3 )
+                    }
+                }
+                return ParseTreeNode::Symbol(String::from(""));
+            }
         }
     }
 }
-
 

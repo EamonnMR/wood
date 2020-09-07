@@ -1,7 +1,6 @@
 use crate::scope::Scope;
 use crate::node::ParseTreeNode;
 // use crate::node::print_node;
-use crate::func::function_call;
 
 impl Scope {
     pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
@@ -37,7 +36,7 @@ impl Scope {
                             //let v: Vec<ParseTreeNode> = args.iter().map(
                             //    | x: &ParseTreeNode | -> ParseTreeNode { eval(scope, x) }
                             //).collect();
-                            return function_call(fname, args.to_vec(), self);
+                            return self.function_call(fname, args.to_vec());
                         }
                         _ => {
                             // TODO: Print some sort of error
