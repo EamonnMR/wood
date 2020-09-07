@@ -2,7 +2,7 @@ use crate::scope::Scope;
 use crate::node::ParseTreeNode;
 // use crate::node::print_node;
 
-impl Scope {
+impl Scope <'_>{
     pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
         match *node{
             ParseTreeNode::Nil=> {
@@ -17,9 +17,9 @@ impl Scope {
                 // TODO: Should symbols eval to themselves if they're not in scope?
                 // return ParseTreeNode::Symbol(symbol.to_owned());
             }
-            ParseTreeNode::Function { ref params, ref proc } => {
+            ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
-                println!("How did this function literal get eval'd?");
+                println!("How did this function literal get eval'd We don't have function literals!");
                 return ParseTreeNode::Nil;
             }
             ParseTreeNode::Int(int) => {

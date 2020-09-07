@@ -6,7 +6,7 @@ pub enum ParseTreeNode {
     Nil,
     Function{
         params: Vec<ParseTreeNode>,
-        proc: Vec<ParseTreeNode>
+        proc: Box<ParseTreeNode>,
     }
 }
 
@@ -35,9 +35,7 @@ impl ParseTreeNode {
                     node.print_node( depth + 1 );
                 }
                 println!(") proc: ");
-                for node in params {
-                    node.print_node(depth + 1);
-                }
+                    proc.print_node(depth + 1);
                 println!(")");
             }
             ParseTreeNode::Nil  => {

@@ -5,7 +5,7 @@ use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 
-impl Scope {
+impl Scope <'_> {
     pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
         let mut args_index = argv.iter();
 
@@ -63,7 +63,7 @@ impl Scope {
                 return ParseTreeNode::Function{
                     // TODO: expect_list)
                     params: expect_list(expect_arg()),
-                    proc: expect_list(expect_arg()),
+                    proc: Box::new(expect_arg()),
                 }
             }
 
@@ -71,14 +71,32 @@ impl Scope {
                 let possible_func = self.get(&String::from(fname));
                 match possible_func{
                     ParseTreeNode::Function { params, proc } => {
-                        println!( "Would call function" );
+                        // Bind arguments to params in the function scope
+                        // We parse the args first because we can't use self.eval after we make
+                        // function scope
+                        let mut args = Vec::<(ParseTreeNode, ParseTreeNode)>::new();
+                        for param in params {
+                            args.push((param, self.eval(&expect_arg())))
+                        }
+                        // Populate a new scope with args bound to params
+                        let mut function_scope = self.new_child();
+                        for param_value in args {
+                            let (param, value) = param_value;
+                            let symbol = expect_symbol(param);
+                            function_scope.set(
+                                symbol.to_owned(),
+                                value,
+                            );
+                        }
+                        // Evaluate the function
+                        return function_scope.eval( &proc );
                     }
                     _ => {
                         println!( "expected function, got");
-                        possible_func.print_node( 3 )
+                        possible_func.print_node( 3 );
+                        return ParseTreeNode::Symbol(String::from(""));
                     }
                 }
-                return ParseTreeNode::Symbol(String::from(""));
             }
         }
     }
