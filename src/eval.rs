@@ -2,7 +2,7 @@ use crate::scope::Scope;
 use crate::scope::get;
 use crate::scope::set;
 use crate::node::ParseTreeNode;
-use crate::node::print_node;
+// use crate::node::print_node;
 use crate::func::function_call;
 
 pub fn eval(scope: &mut Scope,  node: &ParseTreeNode) -> ParseTreeNode {
@@ -40,7 +40,7 @@ pub fn eval(scope: &mut Scope,  node: &ParseTreeNode) -> ParseTreeNode {
                     _ => {
                         // TODO: Print some sort of error
                         println!("cannot parse func name");
-                        print_node(&func_name, 0);
+                        func_name.print_node(0);
                         return ParseTreeNode::Symbol( String::from("") );
                     } 
                 }

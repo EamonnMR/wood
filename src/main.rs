@@ -8,7 +8,7 @@ mod eval;
 mod func;
 
 pub use crate::node::ParseTreeNode;
-pub use crate::node::print_node;
+// pub use crate::node::print_node;
 pub use crate::parse::parse_line;
 pub use crate::scope::Scope;
 pub use crate::scope::get;
@@ -29,8 +29,9 @@ fn main() {
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
-        print_node( &root_node, 0);
+        root_node.print_node(0);
         let result = eval( &mut root_scope, &root_node );
-        print_node( &result, 0);
+        result.print_node(0);
+
     }
 }

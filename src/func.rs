@@ -5,7 +5,7 @@ use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 use crate::eval::eval;
-use crate::node::print_node;
+// use crate::node::print_node;
 use crate::scope::get;
 use crate::scope::set;
 
@@ -54,7 +54,7 @@ pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) 
             println!("(special builtin to debug)");
             for (key, value) in scope.locals.iter(){
                 println!("{}: ", key);
-                print_node(value, 20);
+                value.print_node(20);
             }
             return ParseTreeNode::Nil;
         }
@@ -79,7 +79,7 @@ pub fn function_call( fname: &str, argv: Vec<ParseTreeNode>, scope: &mut Scope) 
                 }
                 _ => {
                     println!( "expected function, got");
-                    print_node( &possible_func, 3)
+                    possible_func.print_node( 3 )
                 }
             }
             return ParseTreeNode::Symbol(String::from(""));
