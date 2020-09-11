@@ -33,6 +33,22 @@ impl Scope <'_> {
                     expect_int(self.eval(&expect_arg()))
                 );
             }
+            
+            "begin" => {
+                let mut last_value = ParseTreeNode::Nil;
+                loop {
+                    let arg = expect_arg();
+                    match arg {
+                        ParseTreeNode::Nil => {
+                            return last_value;
+                        }
+                        _ => {
+                            last_value = self.eval(&arg);
+                        }
+                    }
+                }
+            }
+
             "define" => {
                 println!("define");
                 let symbol = expect_symbol(expect_arg());
