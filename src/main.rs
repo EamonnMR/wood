@@ -11,8 +11,11 @@ pub use crate::node::ParseTreeNode;
 pub use crate::parse::parse_line;
 pub use crate::scope::Scope;
 
-
 fn main() {
+    repl()
+}
+
+fn repl() {
     // REPL
     println!("Wood 0.0.1");
     let mut root_scope = Scope::new();
@@ -21,9 +24,7 @@ fn main() {
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
         let root_node = parse_line ( inputline );
-        root_node.print_node(0);
-        let result = root_scope.eval(&root_node );
-        result.print_node(0);
-
+        root_scope.eval(&root_node ).print_node(0);
     }
 }
+

@@ -34,6 +34,11 @@ impl Scope <'_> {
                 );
             }
             
+            "print" => {
+                expect_arg().print_node(0);
+                return ParseTreeNode::Nil;
+            }
+            
             "begin" => {
                 let mut last_value = ParseTreeNode::Nil;
                 loop {

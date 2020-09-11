@@ -17,10 +17,12 @@ impl ParseTreeNode {
 
         match *self{
             ParseTreeNode::Symbol(ref symbol) => {
-                println!("{}Symbol: {}",indent, symbol);
+                // println!("{}Symbol: {}",indent, symbol);
+                println!("{}{}", indent, symbol);
             }
             ParseTreeNode::Int(int) => {
-                println!("{}Int: {}", indent, int);
+                // println!("{}Symbol: {}",indent, symbol);
+                println!("{}{}", indent, int);
             }
             ParseTreeNode::List(ref list) => {
                 println!("{}(", indent);

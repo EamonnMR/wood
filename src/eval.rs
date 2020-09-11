@@ -1,12 +1,11 @@
 use crate::scope::Scope;
 use crate::node::ParseTreeNode;
-// use crate::node::print_node;
 
 impl Scope <'_>{
     pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
         match *node{
             ParseTreeNode::Nil=> {
-                println!("Error: nil node made it into the final parse tree");
+                // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
                 return ParseTreeNode::Nil;
@@ -19,11 +18,11 @@ impl Scope <'_>{
             }
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
-                println!("How did this function literal get eval'd We don't have function literals!");
+                //println!("How did this function literal get eval'd We don't have function literals!");
                 return ParseTreeNode::Nil;
             }
             ParseTreeNode::Int(int) => {
-                println!("Eval int: {}", int);
+                //println!("Eval int: {}", int);
                 return ParseTreeNode::Int(int);
             }
             ParseTreeNode::List(ref list) => {
@@ -31,11 +30,7 @@ impl Scope <'_>{
                     // TODO: Eval func_name before extracting fname - ?
                     match *func_name {
                         ParseTreeNode::Symbol( ref fname ) => {
-                            println!("evaluating function: {}", fname);
-                            // TODO: Custom functions may need something like this:
-                            //let v: Vec<ParseTreeNode> = args.iter().map(
-                            //    | x: &ParseTreeNode | -> ParseTreeNode { eval(scope, x) }
-                            //).collect();
+                            // println!("evaluating function: {}", fname);
                             return self.function_call(fname, args.to_vec());
                         }
                         _ => {
