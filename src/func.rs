@@ -17,7 +17,7 @@ impl Scope <'_> {
                     return node.to_owned();
                 }
                 None => {
-                    println!("Expected an additional argument");
+                    // println!("Expected an additional argument");
                     return ParseTreeNode::Nil;
                 }
             }
@@ -25,7 +25,7 @@ impl Scope <'_> {
 
         match fname {
             "+" => {
-                println!("plus");
+                // println!("plus");
 
                 return ParseTreeNode::Int(
                     expect_int(self.eval(&expect_arg()))
@@ -55,7 +55,7 @@ impl Scope <'_> {
             }
 
             "define" => {
-                println!("define");
+                // println!("define");
                 let symbol = expect_symbol(expect_arg());
                 let value = self.eval(&expect_arg());
                 self.set(

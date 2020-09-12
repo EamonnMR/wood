@@ -11,7 +11,7 @@ impl Scope <'_>{
                 return ParseTreeNode::Nil;
             }
             ParseTreeNode::Symbol(ref symbol) => {
-                println!("Eval symbol: {}", symbol);
+                // println!("Eval symbol: {}", symbol);
                 return self.get(symbol);
                 // TODO: Should symbols eval to themselves if they're not in scope?
                 // return ParseTreeNode::Symbol(symbol.to_owned());

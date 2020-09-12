@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 pub use crate::node::ParseTreeNode;
-pub use crate::parse::parse_line;
 
 pub struct Scope <'a>{
     pub parent: Option<&'a Scope<'a>>,

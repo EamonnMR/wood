@@ -1,4 +1,6 @@
 use std::io;
+use std::fs;
+use std::env;
 
 mod node;
 mod parse;
@@ -7,12 +9,17 @@ mod eval;
 mod func;
 
 pub use crate::node::ParseTreeNode;
-// pub use crate::node::print_node;
-pub use crate::parse::parse_line;
+pub use crate::parse::parse;
 pub use crate::scope::Scope;
 
 fn main() {
-    repl()
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 {
+        run_file(&args[1])
+    }
+    else {
+        repl()
+    }
 }
 
 fn repl() {
@@ -23,8 +30,15 @@ fn repl() {
         let mut inputline = String::new();
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
-        let root_node = parse_line ( inputline );
+        let root_node = parse ( inputline );
         root_scope.eval(&root_node ).print_node(0);
     }
 }
 
+fn run_file( file: &str ){
+    let file_bytes = &fs::read(file).expect("File not found");
+    let file = String::from_utf8_lossy( file_bytes ).to_string();
+    let root_node = parse( file );
+    let mut root_scope = Scope::new();
+    root_scope.eval(&root_node ).print_node(0);
+}

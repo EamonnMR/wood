@@ -57,7 +57,7 @@ fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> ParseTreeNode {
     return node;
 }
 
-pub fn parse_line (source: String) -> ParseTreeNode {
+pub fn parse (source: String) -> ParseTreeNode {
 
     let preproc = preprocess_source(source);
     let mut tokens = preproc.split_whitespace();
