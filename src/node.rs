@@ -1,4 +1,7 @@
-#[derive(Clone)]
+
+use gc::{Finalize, Gc, Trace}
+
+#[derive(Trace)]
 pub enum ParseTreeNode {
     Symbol(String),
     List(Vec<ParseTreeNode>),

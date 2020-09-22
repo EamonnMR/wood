@@ -1,18 +1,22 @@
+
+use gc::{Finalize, Gc, Trace};
+
+
 use std::collections::HashMap;
 
 pub use crate::node::ParseTreeNode;
 
 pub struct Scope <'a>{
     pub parent: Option<&'a Scope<'a>>,
-    pub locals: HashMap<String, ParseTreeNode>,
+    pub locals: HashMap<String, Gc<ParseTreeNode>>,
 }
 
 impl Scope <'_> {
-    pub fn get(&self, key: &String) -> ParseTreeNode {
+    pub fn get(&self, key: &String) -> Gc<ParseTreeNode >{
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
-                return node.to_owned();
+                return node;
             }
             None  => {
                 match self.parent {
