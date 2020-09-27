@@ -1,5 +1,5 @@
 
-use gc::{Finalize, Gc, Trace}
+use gc::{Finalize, Gc, Trace};
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
