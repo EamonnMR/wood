@@ -83,8 +83,8 @@ impl Scope <'_> {
             "lambda" => {
                 return ParseTreeNode::Function{
                     // TODO: expect_list)
-                    params: expect_list(expect_arg()),
-                    proc: Box::new(expect_arg()),
+                    params: Gc::new(expect_list(expect_arg())),
+                    proc: Gc::new(expect_arg()),
                 }
             }
 

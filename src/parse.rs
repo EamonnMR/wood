@@ -1,4 +1,5 @@
 pub use crate::node::ParseTreeNode;
+use gc::{Gc};
 
 fn preprocess_source(source: String) -> String {
     // add spaces around parens so they are tokenized
@@ -7,14 +8,14 @@ fn preprocess_source(source: String) -> String {
         .replace(")", " ) ")
 }
 
-fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (ParseTreeNode, bool) {
-    // Returns a parse tree node if one was found, and "true" if it's a list terminator.
+fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (Gc<ParseTreeNode>, bool) {
+    // Returns a GC'd pointer to a parse tree node if one was found, and "true" if it's a list terminator.
     let token_option = token_iter.next();
 
     match token_option {
         None => {
             println!("EOF");
-            (ParseTreeNode::Nil, true)
+            (Gc::new(ParseTreeNode::Nil), true)
         } // TODO: Crash - expecting close paren
 
         Some( token ) => {
@@ -23,15 +24,15 @@ fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (ParseTreeNode, b
             if token == "(" {
                 return (parse_list( token_iter ), false);
             } else if token == ")" {
-                return (ParseTreeNode::Nil, true);
+                return (Gc::new(ParseTreeNode::Nil), true);
             } else {
                 // Try to parse as int; if not, treat as symbol
                 match token.parse::<i32>(){
                     Ok(ival) => {
-                        return (ParseTreeNode::Int( ival ), false);
+                        return (Gc::new(ParseTreeNode::Int( ival )), false);
                     }
                     Err(..) => {
-                        return (ParseTreeNode::Symbol( token.to_string() ), false);
+                        return (Gc::new(ParseTreeNode::Symbol( token.to_string() )), false);
                     }
                 }
             }
@@ -39,7 +40,7 @@ fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (ParseTreeNode, b
     }
 }
 
-fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> ParseTreeNode {
+fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> Gc<ParseTreeNode> {
     let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
     match node {
         ParseTreeNode::List(ref mut list) => {
@@ -57,8 +58,7 @@ fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> ParseTreeNode {
     return node;
 }
 
-pub fn parse (source: String) -> ParseTreeNode {
-
+pub fn parse (source: String) -> Gc<ParseTreeNode> {
     let preproc = preprocess_source(source);
     let mut tokens = preproc.split_whitespace();
 

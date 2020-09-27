@@ -1,15 +1,15 @@
 
 use gc::{Finalize, Gc, Trace}
 
-#[derive(Trace)]
+#[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
     Symbol(String),
-    List(Vec<ParseTreeNode>),
+    List(Vec<Gc<ParseTreeNode>>),
     Int(i32),
     Nil,
     Function{
-        params: Vec<ParseTreeNode>,
-        proc: Box<ParseTreeNode>,
+        params: Vec<Gc<ParseTreeNode>>,
+        proc: Gc<ParseTreeNode>,
     }
 }
 
