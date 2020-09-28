@@ -1,14 +1,16 @@
 use crate::scope::Scope;
 use crate::node::ParseTreeNode;
 
+use gc::{Finalize, Gc, Trace};
+
 impl Scope <'_>{
-    pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
+    pub fn eval(&mut self, node: Gc<ParseTreeNode>) -> Gc<ParseTreeNode> {
         match *node{
             ParseTreeNode::Nil=> {
                 // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
-                return ParseTreeNode::Nil;
+                return Gc::new(ParseTreeNode::Nil);
             }
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("Eval symbol: {}", symbol);
@@ -19,11 +21,11 @@ impl Scope <'_>{
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
                 //println!("How did this function literal get eval'd We don't have function literals!");
-                return ParseTreeNode::Nil;
+                return Gc::new(ParseTreeNode::Nil);
             }
             ParseTreeNode::Int(int) => {
                 //println!("Eval int: {}", int);
-                return ParseTreeNode::Int(int);
+                return node.clone();
             }
             ParseTreeNode::List(ref list) => {
                 if let Some((func_name, args)) = list.split_first() {
@@ -37,7 +39,7 @@ impl Scope <'_>{
                             // TODO: Print some sort of error
                             println!("cannot parse func name - what is it?");
                             func_name.print_node(0);
-                            return ParseTreeNode::Symbol( String::from("") );
+                            return Gc::new(ParseTreeNode::Symbol( String::from("") ));
                         } 
                     }
                     

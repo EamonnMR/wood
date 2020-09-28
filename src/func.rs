@@ -1,12 +1,17 @@
 use std::iter::Iterator;
+
+use gc::{Finalize, Gc, Trace};
+
 use crate::node::ParseTreeNode;
 use crate::node::expect_int;
 use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 
+
+
 impl Scope <'_> {
-    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> Gc<ParseTreeNode> {
         let mut args_index = argv.iter();
 
         let mut expect_arg = || -> ParseTreeNode {

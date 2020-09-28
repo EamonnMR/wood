@@ -1,15 +1,18 @@
-
 use gc::{Finalize, Gc, Trace};
+
+pub type GcNode = Gc<ParseTreeNode>;
+
+pub type GcList = Gc<Vec<GcNode>>;
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
     Symbol(String),
-    List(Vec<Gc<ParseTreeNode>>),
+    List(GcList),
     Int(i32),
     Nil,
     Function{
-        params: Vec<Gc<ParseTreeNode>>,
-        proc: Gc<ParseTreeNode>,
+        params: GcList,
+        proc: GcNode,
     }
 }
 
@@ -29,14 +32,14 @@ impl ParseTreeNode {
             }
             ParseTreeNode::List(ref list) => {
                 println!("{}(", indent);
-                for node in list {
-                    node.print_node( depth + 1 );
+                for node in **list {
+                    (*node).print_node( depth + 1 );
                 }
                 println!("{})", indent);
             }
             ParseTreeNode::Function { ref params, ref proc } => {
                 println!("Lambda params (");
-                for node in params {
+                for node in **params {
                     node.print_node( depth + 1 );
                 }
                 println!(") proc: ");
@@ -51,15 +54,15 @@ impl ParseTreeNode {
 }
 
 // TODO: use enum_methods?
-pub fn expect_list(node: ParseTreeNode) -> Vec<ParseTreeNode> {
+pub fn expect_list(node: ParseTreeNode) -> GcList {
     match node {
         ParseTreeNode::List(list) => {
-            return list;
+            return list.clone();
         }
         _ => {
             println!("Expected list, got: ");
             node.print_node(20);
-            return Vec::<ParseTreeNode>::new()
+            return Gc::new(Vec::<Gc<ParseTreeNode>>::new())
         }
     }
 }
@@ -77,15 +80,15 @@ pub fn expect_int(node: ParseTreeNode) -> i32 {
     }
 }
 
-pub fn expect_symbol(node: ParseTreeNode) -> String {
+pub fn expect_symbol(node: ParseTreeNode) -> Gc<String> {
     match node {
         ParseTreeNode::Symbol(string) => {
-            return string;
+            return Gc<string>;
         }
         _ => {
             println!("Expected a string, got: ");
             node.print_node(20);
-            return String::from("");
+            return Gc::new(String::from(""));
         }
     }
 }
