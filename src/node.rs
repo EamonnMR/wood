@@ -16,6 +16,10 @@ pub enum ParseTreeNode {
     }
 }
 
+pub fn GcList_new() -> GcList {
+    Gc::new( Vec::<Gc<ParseTreeNode>>::new() )
+}
+
 impl ParseTreeNode {
     pub fn print_node(&self, depth: usize) {
         // https://users.rust-lang.org/t/fill-string-with-repeated-character/1121/3
@@ -83,7 +87,7 @@ pub fn expect_int(node: ParseTreeNode) -> i32 {
 pub fn expect_symbol(node: ParseTreeNode) -> Gc<String> {
     match node {
         ParseTreeNode::Symbol(string) => {
-            return Gc<string>;
+            return Gc::new(string);
         }
         _ => {
             println!("Expected a string, got: ");

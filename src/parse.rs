@@ -1,4 +1,4 @@
-pub use crate::node::ParseTreeNode;
+pub use crate::node::{ParseTreeNode, GcNode, GcList, GcList_new};
 use gc::{Gc};
 
 fn preprocess_source(source: String) -> String {
@@ -8,7 +8,7 @@ fn preprocess_source(source: String) -> String {
         .replace(")", " ) ")
 }
 
-fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (Gc<ParseTreeNode>, bool) {
+fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (GcNode, bool) {
     // Returns a GC'd pointer to a parse tree node if one was found, and "true" if it's a list terminator.
     let token_option = token_iter.next();
 
@@ -40,8 +40,8 @@ fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (Gc<ParseTreeNode
     }
 }
 
-fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> Gc<ParseTreeNode> {
-    let mut node = ParseTreeNode::List(Vec::<ParseTreeNode>::new());
+fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> GcNode {
+    let mut node = ParseTreeNode::List(GcList_new());
     match node {
         ParseTreeNode::List(ref mut list) => {
             loop {
@@ -55,10 +55,10 @@ fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> Gc<ParseTreeNode>
         }
         _ => ()
     }
-    return node;
+    return Gc::new(node);
 }
 
-pub fn parse (source: String) -> Gc<ParseTreeNode> {
+pub fn parse (source: String) -> GcNode {
     let preproc = preprocess_source(source);
     let mut tokens = preproc.split_whitespace();
 

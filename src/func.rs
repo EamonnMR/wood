@@ -115,7 +115,7 @@ impl Scope <'_> {
                             );
                         }
                         // Evaluate the function
-                        return function_scope.eval( &proc );
+                        return function_scope.eval( proc );
                     }
                     _ => {
                         println!( "expected function, got");
