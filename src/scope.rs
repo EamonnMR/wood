@@ -16,7 +16,7 @@ impl Scope <'_> {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
-                return node;
+                return *node;
             }
             None  => {
                 match self.parent {
@@ -26,7 +26,7 @@ impl Scope <'_> {
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return ParseTreeNode::Nil;
+                        return Gc::new(ParseTreeNode::Nil);
                     }
                 }
             }

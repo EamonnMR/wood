@@ -30,10 +30,10 @@ impl Scope <'_>{
             ParseTreeNode::List(ref list) => {
                 if let Some((func_name, args)) = list.split_first() {
                     // TODO: Eval func_name before extracting fname - ?
-                    match *func_name {
+                    match **func_name {
                         ParseTreeNode::Symbol( ref fname ) => {
                             // println!("evaluating function: {}", fname);
-                            return self.function_call(fname, args.to_vec());
+                            return self.function_call(fname, *args.to_vec());
                         }
                         _ => {
                             // TODO: Print some sort of error
