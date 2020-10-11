@@ -1,10 +1,10 @@
 use crate::scope::Scope;
-use crate::node::ParseTreeNode;
+use crate::node::{ParseTreeNode, GcNode};
 
 use gc::{Finalize, Gc, Trace};
 
 impl Scope <'_>{
-    pub fn eval(&mut self, node: Gc<ParseTreeNode>) -> Gc<ParseTreeNode> {
+    pub fn eval(&mut self, node: GcNode) -> GcNode {
         match *node{
             ParseTreeNode::Nil=> {
                 // println!("Error: nil node made it into the final parse tree");
@@ -46,7 +46,7 @@ impl Scope <'_>{
                 } else {
                     //.TODO: Some sort of error
                     println!("Cannot parse fname and args from.");
-                    return ParseTreeNode::Symbol( String::from("") );
+                    return Gc::new(ParseTreeNode::Symbol( String::from("")) );
                 }
             }
         }

@@ -100,9 +100,9 @@ impl Scope <'_> {
                         // Bind arguments to params in the function scope
                         // We parse the args first because we can't use self.eval after we make
                         // function scope
-                        let mut args = Vec::<(ParseTreeNode, ParseTreeNode)>::new();
-                        for param in params {
-                            args.push((param, self.eval(&expect_arg())))
+                        let mut args = Vec::<(GcNode, GcNode)>::new();
+                        for param in *params {
+                            args.push((param, self.eval(expect_arg())))
                         }
                         // Populate a new scope with args bound to params
                         let mut function_scope = self.new_child();
