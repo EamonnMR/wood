@@ -33,7 +33,10 @@ impl Scope <'_>{
                     match **func_name {
                         ParseTreeNode::Symbol( ref fname ) => {
                             // println!("evaluating function: {}", fname);
-                            return self.function_call(fname, *args.to_vec());
+                            return self.function_call(
+                                fname,
+                                (*args).to_vec()
+                            );
                         }
                         _ => {
                             // TODO: Print some sort of error
