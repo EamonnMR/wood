@@ -1,5 +1,5 @@
 use crate::scope::Scope;
-use crate::node::{ParseTreeNode, GcNode};
+use crate::node::{ParseTreeNode, GcNode, GetNil};
 
 use gc::{Finalize, Gc, Trace};
 
@@ -10,7 +10,7 @@ impl Scope <'_>{
                 // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
-                return Gc::new(ParseTreeNode::Nil);
+                return GetNil();
             }
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("Eval symbol: {}", symbol);
@@ -21,7 +21,7 @@ impl Scope <'_>{
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
                 //println!("How did this function literal get eval'd We don't have function literals!");
-                return Gc::new(ParseTreeNode::Nil);
+                return GetNil();
             }
             ParseTreeNode::Int(int) => {
                 //println!("Eval int: {}", int);

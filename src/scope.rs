@@ -4,15 +4,15 @@ use gc::{Finalize, Gc, Trace};
 
 use std::collections::HashMap;
 
-pub use crate::node::ParseTreeNode;
+pub use crate::node::{ParseTreeNode, GcNode, GetNil};
 
 pub struct Scope <'a>{
     pub parent: Option<&'a Scope<'a>>,
-    pub locals: HashMap<String, Gc<ParseTreeNode>>,
+    pub locals: HashMap<String, GcNode>,
 }
 
 impl Scope <'_> {
-    pub fn get(&self, key: &String) -> Gc<ParseTreeNode >{
+    pub fn get(&self, key: &String) -> GcNode {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
@@ -26,7 +26,7 @@ impl Scope <'_> {
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return Gc::new(ParseTreeNode::Nil);
+                        return GetNil();
                     }
                 }
             }

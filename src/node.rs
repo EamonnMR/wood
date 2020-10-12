@@ -20,6 +20,10 @@ pub fn GcList_new() -> GcList {
     Gc::new( Vec::<Gc<ParseTreeNode>>::new() )
 }
 
+pub fn GetNil() -> GcNode {
+    return Gc::new(ParseTreeNode::Nil);
+}
+
 impl ParseTreeNode {
     pub fn print_node(&self, depth: usize) {
         // https://users.rust-lang.org/t/fill-string-with-repeated-character/1121/3

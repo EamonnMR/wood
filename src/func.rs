@@ -2,7 +2,7 @@ use std::iter::Iterator;
 
 use gc::{Finalize, Gc, Trace};
 
-use crate::node::ParseTreeNode;
+use crate::node::{GcList, GcNode, ParseTreeNode, GetNil};
 use crate::node::expect_int;
 use crate::node::expect_list;
 use crate::node::expect_symbol;
@@ -11,19 +11,19 @@ use crate::scope::Scope;
 
 
 impl Scope <'_> {
-    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> Gc<ParseTreeNode> {
+    pub fn function_call(&mut self, fname: &str, argv: Vec<GcNode>) -> Gc<ParseTreeNode> {
         let mut args_index = argv.iter();
 
-        let mut expect_arg = || -> ParseTreeNode {
+        let mut expect_arg = || -> GcNode {
 
             match args_index.next() {
 
                 Some(node) => {
-                    return node.to_owned();
+                    return *node;
                 }
                 None => {
                     // println!("Expected an additional argument");
-                    return ParseTreeNode::Nil;
+                    return Gc::new(ParseTreeNode::Nil);
                 }
             }
         };
@@ -32,43 +32,44 @@ impl Scope <'_> {
             "+" => {
                 // println!("plus");
 
-                return ParseTreeNode::Int(
-                    expect_int(self.eval(&expect_arg()))
+                return Gc::new(ParseTreeNode::Int(
+                    expect_int(*self.eval(expect_arg()))
                     +
-                    expect_int(self.eval(&expect_arg()))
-                );
+                    expect_int(*self.eval(expect_arg()))
+                ));
             }
             
             "print" => {
-                expect_arg().print_node(0);
-                return ParseTreeNode::Nil;
+                (*expect_arg()).print_node(0);
+                return GetNil();
             }
             
             "begin" => {
-                let mut last_value = ParseTreeNode::Nil;
+                let mut last_value = GetNil();
                 loop {
                     let arg = expect_arg();
-                    match arg {
+                    match *arg {
                         ParseTreeNode::Nil => {
                             return last_value;
                         }
                         _ => {
-                            last_value = self.eval(&arg);
+                            last_value = self.eval(arg);
                         }
                     }
                 }
+                return last_value;
             }
 
             "define" => {
                 // println!("define");
-                let symbol = expect_symbol(expect_arg());
-                let value = self.eval(&expect_arg());
+                let symbol = expect_symbol(*expect_arg());
+                let value = self.eval(expect_arg());
                 self.set(
-                    symbol.to_owned(),
+                    (*symbol).to_owned(),
                     value,
                 );
 
-                return ParseTreeNode::Symbol( symbol.to_owned());
+                return Gc::new(ParseTreeNode::Symbol( (*symbol).to_owned()));
             }
 
             "locals" => {
@@ -76,9 +77,9 @@ impl Scope <'_> {
                 println!("(special builtin to debug)");
                 for (key, value) in self.locals.iter(){
                     println!("{}: ", key);
-                    value.print_node(20);
+                    (*value).print_node(20);
                 }
-                return ParseTreeNode::Nil;
+                return GetNil();
             }
             
             "quote" => {
@@ -86,16 +87,16 @@ impl Scope <'_> {
             }
             
             "lambda" => {
-                return ParseTreeNode::Function{
+                return Gc::new(ParseTreeNode::Function{
                     // TODO: expect_list)
-                    params: Gc::new(expect_list(expect_arg())),
-                    proc: Gc::new(expect_arg()),
-                }
+                    params: expect_list(*expect_arg()),
+                    proc: expect_arg(),
+                })
             }
 
             _ => {
                 let possible_func = self.get(&String::from(fname));
-                match possible_func{
+                match *possible_func{
                     ParseTreeNode::Function { params, proc } => {
                         // Bind arguments to params in the function scope
                         // We parse the args first because we can't use self.eval after we make
@@ -108,9 +109,9 @@ impl Scope <'_> {
                         let mut function_scope = self.new_child();
                         for param_value in args {
                             let (param, value) = param_value;
-                            let symbol = expect_symbol(param);
+                            let symbol = expect_symbol(*param);
                             function_scope.set(
-                                symbol.to_owned(),
+                                (*symbol).to_owned(),
                                 value,
                             );
                         }
@@ -120,7 +121,7 @@ impl Scope <'_> {
                     _ => {
                         println!( "expected function, got");
                         possible_func.print_node( 3 );
-                        return ParseTreeNode::Symbol(String::from(""));
+                        return Gc::new(ParseTreeNode::Symbol(String::from("")));
                     }
                 }
             }
