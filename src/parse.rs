@@ -41,21 +41,16 @@ fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (GcNode, bool) {
 }
 
 fn parse_list( token_iter: &mut std::str::SplitWhitespace ) -> GcNode {
-    let mut node = ParseTreeNode::List(GcList_new());
-    match node {
-        ParseTreeNode::List(ref mut list) => {
-            loop {
-                let (list_node, is_terminator) = parse_node(token_iter);
-                if is_terminator {
-                    break;
-                } else {
-                    list.push(list_node);
-                }
-            }
+    let mut list = Vec::<Gc<ParseTreeNode>>::new(); 
+    loop {
+        let (list_node, is_terminator) = parse_node(token_iter);
+        if is_terminator {
+            break;
+        } else {
+            list.push(list_node);
         }
-        _ => ()
     }
-    return Gc::new(node);
+    return Gc::new(ParseTreeNode::List(Gc::new(list)));
 }
 
 pub fn parse (source: String) -> GcNode {
