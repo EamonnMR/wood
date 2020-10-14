@@ -16,7 +16,7 @@ impl Scope <'_> {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
-                return *node;
+                return node.clone();
             }
             None  => {
                 match self.parent {

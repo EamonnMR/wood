@@ -16,7 +16,7 @@ impl Scope <'_> {
             match args_index.next() {
 
                 Some(node) => {
-                    return *node;
+                    return node.clone();
                 }
                 None => {
                     // println!("Expected an additional argument");
@@ -93,14 +93,14 @@ impl Scope <'_> {
 
             _ => {
                 let possible_func = self.get(&String::from(fname));
-                match *possible_func{
+                match &*possible_func{
                     ParseTreeNode::Function { params, proc } => {
                         // Bind arguments to params in the function scope
                         // We parse the args first because we can't use self.eval after we make
                         // function scope
                         let mut args = Vec::<(GcNode, GcNode)>::new();
-                        for param in &*params {
-                            args.push((*param, self.eval(expect_arg())));
+                        for param in &*params.clone() {
+                            args.push((param.clone(), self.eval(expect_arg())));
                         }
                         // Populate a new scope with args bound to params
                         let mut function_scope = self.new_child();
@@ -113,7 +113,7 @@ impl Scope <'_> {
                             );
                         }
                         // Evaluate the function
-                        return function_scope.eval( proc );
+                        return function_scope.eval( proc.clone() );
                     }
                     _ => {
                         println!( "expected function, got");
