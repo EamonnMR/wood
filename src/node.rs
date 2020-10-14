@@ -6,21 +6,17 @@ pub type GcList = Gc<Vec<GcNode>>;
 
 pub type GcStr = Gc<String>;
 
-
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
     Symbol(GcStr),
     List(GcList),
     Int(i32),
     Nil,
-    Function{
-        params: GcList,
-        proc: GcNode,
-    }
+    Function { params: GcList, proc: GcNode },
 }
 
 pub fn new_gclist() -> GcList {
-    Gc::new( Vec::<Gc<ParseTreeNode>>::new() )
+    Gc::new(Vec::<Gc<ParseTreeNode>>::new())
 }
 
 pub fn new_nil() -> GcNode {
@@ -36,7 +32,7 @@ impl ParseTreeNode {
         // https://users.rust-lang.org/t/fill-string-with-repeated-character/1121/3
         let indent = std::iter::repeat(" ").take(depth).collect::<String>();
 
-        match *self{
+        match *self {
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("{}Symbol: {}",indent, symbol);
                 println!("{}{}", indent, symbol);
@@ -48,20 +44,23 @@ impl ParseTreeNode {
             ParseTreeNode::List(ref list) => {
                 println!("{}(", indent);
                 for node in &**list {
-                    (*node).print_node( depth + 1 );
+                    (*node).print_node(depth + 1);
                 }
                 println!("{})", indent);
             }
-            ParseTreeNode::Function { ref params, ref proc } => {
+            ParseTreeNode::Function {
+                ref params,
+                ref proc,
+            } => {
                 println!("Lambda params (");
                 for node in &**params {
-                    node.print_node( depth + 1 );
+                    node.print_node(depth + 1);
                 }
                 println!(") proc: ");
-                    proc.print_node(depth + 1);
+                proc.print_node(depth + 1);
                 println!(")");
             }
-            ParseTreeNode::Nil  => {
+            ParseTreeNode::Nil => {
                 println!("{}# Nil Node", indent);
             }
         }

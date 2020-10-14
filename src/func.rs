@@ -1,20 +1,18 @@
 use std::iter::Iterator;
 
-use gc::{Gc};
+use gc::Gc;
 
-use crate::node::{GcNode, ParseTreeNode, new_nil, expect_int, expect_list, expect_symbol, new_blank_str};
+use crate::node::{
+    expect_int, expect_list, expect_symbol, new_blank_str, new_nil, GcNode, ParseTreeNode,
+};
 use crate::scope::Scope;
 
-
-
-impl Scope <'_> {
+impl Scope<'_> {
     pub fn function_call(&mut self, fname: &str, argv: Vec<GcNode>) -> GcNode {
         let mut args_index = argv.iter();
 
         let mut expect_arg = || -> GcNode {
-
             match args_index.next() {
-
                 Some(node) => {
                     return node.clone();
                 }
@@ -30,17 +28,15 @@ impl Scope <'_> {
                 // println!("plus");
 
                 return Gc::new(ParseTreeNode::Int(
-                    expect_int(self.eval(expect_arg()))
-                    +
-                    expect_int(self.eval(expect_arg()))
+                    expect_int(self.eval(expect_arg())) + expect_int(self.eval(expect_arg())),
                 ));
             }
-            
+
             "print" => {
                 (*expect_arg()).print_node(0);
                 return new_nil();
             }
-            
+
             "begin" => {
                 let mut last_value = new_nil();
                 loop {
@@ -60,39 +56,36 @@ impl Scope <'_> {
                 // println!("define");
                 let symbol = expect_symbol(expect_arg());
                 let value = self.eval(expect_arg());
-                self.set(
-                    (*symbol).to_owned(),
-                    value,
-                );
+                self.set((*symbol).to_owned(), value);
 
-                return new_nil()
+                return new_nil();
             }
 
             "locals" => {
                 println!("locals");
                 println!("(special builtin to debug)");
-                for (key, value) in self.locals.iter(){
+                for (key, value) in self.locals.iter() {
                     println!("{}: ", key);
                     (*value).print_node(20);
                 }
                 return new_nil();
             }
-            
+
             "quote" => {
                 return expect_arg();
             }
-            
+
             "lambda" => {
-                return Gc::new(ParseTreeNode::Function{
+                return Gc::new(ParseTreeNode::Function {
                     // TODO: expect_list)
                     params: expect_list(expect_arg()),
                     proc: expect_arg(),
-                })
+                });
             }
 
             _ => {
                 let possible_func = self.get(&String::from(fname));
-                match &*possible_func{
+                match &*possible_func {
                     ParseTreeNode::Function { params, proc } => {
                         // Bind arguments to params in the function scope
                         // We parse the args first because we can't use self.eval after we make
@@ -106,17 +99,14 @@ impl Scope <'_> {
                         for param_value in args {
                             let (param, value) = param_value;
                             let symbol = expect_symbol(param);
-                            function_scope.set(
-                                (*symbol).to_owned(),
-                                value,
-                            );
+                            function_scope.set((*symbol).to_owned(), value);
                         }
                         // Evaluate the function
-                        return function_scope.eval( proc.clone() );
+                        return function_scope.eval(proc.clone());
                     }
                     _ => {
-                        println!( "expected function, got");
-                        possible_func.print_node( 3 );
+                        println!("expected function, got");
+                        possible_func.print_node(3);
                         return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
                     }
                 }
@@ -124,4 +114,3 @@ impl Scope <'_> {
         }
     }
 }
-

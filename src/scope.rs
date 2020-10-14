@@ -1,20 +1,20 @@
 use std::collections::HashMap;
 
-pub use crate::node::{ParseTreeNode, GcNode, new_nil};
+pub use crate::node::{new_nil, GcNode, ParseTreeNode};
 
-pub struct Scope <'a>{
+pub struct Scope<'a> {
     pub parent: Option<&'a Scope<'a>>,
     pub locals: HashMap<String, GcNode>,
 }
 
-impl Scope <'_> {
+impl Scope<'_> {
     pub fn get(&self, key: &String) -> GcNode {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
                 return node.clone();
             }
-            None  => {
+            None => {
                 match self.parent {
                     Some(ref parent) => {
                         return parent.get(key);
@@ -29,21 +29,21 @@ impl Scope <'_> {
         }
     }
 
-    pub fn set(&mut self, key: String, value: GcNode) { 
+    pub fn set(&mut self, key: String, value: GcNode) {
         self.locals.insert(key, value);
     }
 
-    pub fn new() -> Scope <'static> {
+    pub fn new() -> Scope<'static> {
         Scope {
             parent: None,
-            locals: HashMap::new()
+            locals: HashMap::new(),
         }
     }
 
-    pub fn new_child<'a>(& 'a mut self) -> Scope<'a> {
+    pub fn new_child<'a>(&'a mut self) -> Scope<'a> {
         Scope {
             parent: Some(self),
-            locals: HashMap::new()
+            locals: HashMap::new(),
         }
     }
 }

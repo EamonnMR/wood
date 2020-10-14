@@ -1,12 +1,12 @@
+use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
 use crate::scope::Scope;
-use crate::node::{ParseTreeNode, GcNode, new_nil, new_blank_str};
 
-use gc::{Gc};
+use gc::Gc;
 
-impl Scope <'_>{
+impl Scope<'_> {
     pub fn eval(&mut self, node: GcNode) -> GcNode {
-        match *node{
-            ParseTreeNode::Nil=> {
+        match *node {
+            ParseTreeNode::Nil => {
                 // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
@@ -31,25 +31,21 @@ impl Scope <'_>{
                 if let Some((func_name, args)) = list.split_first() {
                     // TODO: Eval func_name before extracting fname - ?
                     match **func_name {
-                        ParseTreeNode::Symbol( ref fname ) => {
+                        ParseTreeNode::Symbol(ref fname) => {
                             // println!("evaluating function: {}", fname);
-                            return self.function_call(
-                                fname,
-                                (*args).to_vec()
-                            );
+                            return self.function_call(fname, (*args).to_vec());
                         }
                         _ => {
                             // TODO: Print some sort of error
                             println!("cannot parse func name - what is it?");
                             func_name.print_node(0);
-                            return Gc::new(ParseTreeNode::Symbol( new_blank_str() ));
-                        } 
+                            return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
+                        }
                     }
-                    
                 } else {
                     //.TODO: Some sort of error
                     println!("Cannot parse fname and args from.");
-                    return Gc::new(ParseTreeNode::Symbol( new_blank_str() ));
+                    return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
                 }
             }
         }
