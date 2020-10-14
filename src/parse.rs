@@ -32,7 +32,7 @@ fn parse_node( token_iter: &mut std::str::SplitWhitespace ) -> (GcNode, bool) {
                         return (Gc::new(ParseTreeNode::Int( ival )), false);
                     }
                     Err(..) => {
-                        return (Gc::new(ParseTreeNode::Symbol( token.to_string() )), false);
+                        return (Gc::new(ParseTreeNode::Symbol( Gc::new(token.to_string()) )), false);
                     }
                 }
             }

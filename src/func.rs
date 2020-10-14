@@ -2,13 +2,13 @@ use std::iter::Iterator;
 
 use gc::{Finalize, Gc, Trace};
 
-use crate::node::{GcList, GcNode, ParseTreeNode, GetNil, expect_int, expect_list, expect_symbol};
+use crate::node::{GcList, GcNode, ParseTreeNode, GetNil, expect_int, expect_list, expect_symbol, GetBlankStr};
 use crate::scope::Scope;
 
 
 
 impl Scope <'_> {
-    pub fn function_call(&mut self, fname: &str, argv: Vec<GcNode>) -> Gc<ParseTreeNode> {
+    pub fn function_call(&mut self, fname: &str, argv: Vec<GcNode>) -> GcNode {
         let mut args_index = argv.iter();
 
         let mut expect_arg = || -> GcNode {
@@ -20,7 +20,7 @@ impl Scope <'_> {
                 }
                 None => {
                     // println!("Expected an additional argument");
-                    return Gc::new(ParseTreeNode::Nil);
+                    return GetNil();
                 }
             }
         };
@@ -66,7 +66,7 @@ impl Scope <'_> {
                     value,
                 );
 
-                return Gc::new(ParseTreeNode::Symbol( (*symbol).to_owned()));
+                return GetNil()
             }
 
             "locals" => {
@@ -118,7 +118,7 @@ impl Scope <'_> {
                     _ => {
                         println!( "expected function, got");
                         possible_func.print_node( 3 );
-                        return Gc::new(ParseTreeNode::Symbol(String::from("")));
+                        return Gc::new(ParseTreeNode::Symbol(GetBlankStr()));
                     }
                 }
             }

@@ -33,7 +33,7 @@ impl Scope <'_> {
         }
     }
 
-    pub fn set(&mut self, key: String, value: Gc<ParseTreeNode>){
+    pub fn set(&mut self, key: String, value: GcNode) { 
         self.locals.insert(key, value);
     }
 

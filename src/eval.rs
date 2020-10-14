@@ -1,5 +1,5 @@
 use crate::scope::Scope;
-use crate::node::{ParseTreeNode, GcNode, GetNil};
+use crate::node::{ParseTreeNode, GcNode, GetNil, GetBlankStr};
 
 use gc::{Finalize, Gc, Trace};
 
@@ -42,14 +42,14 @@ impl Scope <'_>{
                             // TODO: Print some sort of error
                             println!("cannot parse func name - what is it?");
                             func_name.print_node(0);
-                            return Gc::new(ParseTreeNode::Symbol( String::from("") ));
+                            return Gc::new(ParseTreeNode::Symbol( GetBlankStr() ));
                         } 
                     }
                     
                 } else {
                     //.TODO: Some sort of error
                     println!("Cannot parse fname and args from.");
-                    return Gc::new(ParseTreeNode::Symbol( String::from("")) );
+                    return Gc::new(ParseTreeNode::Symbol( GetBlankStr() ));
                 }
             }
         }

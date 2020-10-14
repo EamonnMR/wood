@@ -4,9 +4,12 @@ pub type GcNode = Gc<ParseTreeNode>;
 
 pub type GcList = Gc<Vec<GcNode>>;
 
+pub type GcStr = Gc<String>;
+
+
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
-    Symbol(String),
+    Symbol(GcStr),
     List(GcList),
     Int(i32),
     Nil,
@@ -21,7 +24,11 @@ pub fn GcList_new() -> GcList {
 }
 
 pub fn GetNil() -> GcNode {
-    return Gc::new(ParseTreeNode::Nil);
+    Gc::new(ParseTreeNode::Nil)
+}
+
+pub fn GetBlankStr() -> GcStr {
+    Gc::new(String::from(""))
 }
 
 impl ParseTreeNode {
@@ -88,15 +95,15 @@ pub fn expect_int(node: GcNode) -> i32 {
     }
 }
 
-pub fn expect_symbol(node: GcNode) -> Gc<String> {
+pub fn expect_symbol(node: GcNode) -> GcStr {
     match *node {
         ParseTreeNode::Symbol(string) => {
-            return Gc::new(string);
+            return string;
         }
         _ => {
             println!("Expected a string, got: ");
             node.print_node(20);
-            return Gc::new(String::from(""));
+            return GetBlankStr();
         }
     }
 }
