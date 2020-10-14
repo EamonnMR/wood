@@ -65,44 +65,50 @@ impl ParseTreeNode {
             }
         }
     }
+
+    // "expect" functions. These are similar to Enum Methods
+    // https://docs.rs/enum-methods/0.0.8/enum_methods/
+    // But with the critical difference that they don't panic
+    // if they don't get what they expect. I want the interpreter
+    // to be able to gracefully handle the unexpected.
+
+    pub fn expect_symbol(&self) -> GcStr {
+        match &*self {
+            ParseTreeNode::Symbol(string) => {
+                return string.clone();
+            }
+            _ => {
+                println!("Expected a string, got: ");
+                self.print_node(20);
+                return new_blank_str();
+            }
+        }
+    }
+    pub fn expect_list(&self) -> GcList {
+        match &*self {
+            ParseTreeNode::List(list) => {
+                return list.clone();
+            }
+            _ => {
+                println!("Expected list, got: ");
+                self.print_node(20);
+                return new_gclist();
+            }
+        }
+    }
+
+    pub fn expect_int(&self) -> i32 {
+        match *self {
+            ParseTreeNode::Int(int) => {
+                return int;
+            }
+            _ => {
+                println!("Expected an int, got: ");
+                self.print_node(20);
+                return 0;
+            }
+        }
+    }
 }
 
 // TODO: use enum_methods?
-pub fn expect_list(node: GcNode) -> GcList {
-    match &*node {
-        ParseTreeNode::List(list) => {
-            return list.clone();
-        }
-        _ => {
-            println!("Expected list, got: ");
-            node.print_node(20);
-            return new_gclist();
-        }
-    }
-}
-
-pub fn expect_int(node: GcNode) -> i32 {
-    match *node {
-        ParseTreeNode::Int(int) => {
-            return int;
-        }
-        _ => {
-            println!("Expected an int, got: ");
-            node.print_node(20);
-            return 0;
-        }
-    }
-}
-
-pub fn expect_symbol(node: GcNode) -> GcStr {
-    match &*node {
-        ParseTreeNode::Symbol(string) => {
-            return string.clone();
-        }
-        _ => {
-            println!("Expected a string, got: ");
-            node.print_node(20);
-            return new_blank_str();
-        }
-    }
-}

@@ -2,9 +2,7 @@ use std::iter::Iterator;
 
 use gc::Gc;
 
-use crate::node::{
-    expect_int, expect_list, expect_symbol, new_blank_str, new_nil, GcNode, ParseTreeNode,
-};
+use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
 use crate::scope::Scope;
 
 impl Scope<'_> {
@@ -28,7 +26,7 @@ impl Scope<'_> {
                 // println!("plus");
 
                 return Gc::new(ParseTreeNode::Int(
-                    expect_int(self.eval(expect_arg())) + expect_int(self.eval(expect_arg())),
+                    self.eval(expect_arg()).expect_int() + self.eval(expect_arg()).expect_int(),
                 ));
             }
 
@@ -54,7 +52,7 @@ impl Scope<'_> {
 
             "define" => {
                 // println!("define");
-                let symbol = expect_symbol(expect_arg());
+                let symbol = expect_arg().expect_symbol();
                 let value = self.eval(expect_arg());
                 self.set((*symbol).to_owned(), value);
 
@@ -77,8 +75,7 @@ impl Scope<'_> {
 
             "lambda" => {
                 return Gc::new(ParseTreeNode::Function {
-                    // TODO: expect_list)
-                    params: expect_list(expect_arg()),
+                    params: expect_arg().expect_list(),
                     proc: expect_arg(),
                 });
             }
@@ -98,7 +95,7 @@ impl Scope<'_> {
                         let mut function_scope = self.new_child();
                         for param_value in args {
                             let (param, value) = param_value;
-                            let symbol = expect_symbol(param);
+                            let symbol = param.expect_symbol();
                             function_scope.set((*symbol).to_owned(), value);
                         }
                         // Evaluate the function
