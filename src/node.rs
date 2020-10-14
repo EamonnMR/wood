@@ -40,14 +40,14 @@ impl ParseTreeNode {
             }
             ParseTreeNode::List(ref list) => {
                 println!("{}(", indent);
-                for node in **list {
+                for node in &**list {
                     (*node).print_node( depth + 1 );
                 }
                 println!("{})", indent);
             }
             ParseTreeNode::Function { ref params, ref proc } => {
                 println!("Lambda params (");
-                for node in **params {
+                for node in &**params {
                     node.print_node( depth + 1 );
                 }
                 println!(") proc: ");
@@ -62,8 +62,8 @@ impl ParseTreeNode {
 }
 
 // TODO: use enum_methods?
-pub fn expect_list(node: ParseTreeNode) -> GcList {
-    match node {
+pub fn expect_list(node: GcNode) -> GcList {
+    match *node {
         ParseTreeNode::List(list) => {
             return list.clone();
         }
@@ -75,8 +75,8 @@ pub fn expect_list(node: ParseTreeNode) -> GcList {
     }
 }
 
-pub fn expect_int(node: ParseTreeNode) -> i32 {
-    match node {
+pub fn expect_int(node: GcNode) -> i32 {
+    match *node {
         ParseTreeNode::Int(int) => {
             return int;
         }
@@ -88,8 +88,8 @@ pub fn expect_int(node: ParseTreeNode) -> i32 {
     }
 }
 
-pub fn expect_symbol(node: ParseTreeNode) -> Gc<String> {
-    match node {
+pub fn expect_symbol(node: GcNode) -> Gc<String> {
+    match *node {
         ParseTreeNode::Symbol(string) => {
             return Gc::new(string);
         }

@@ -2,10 +2,7 @@ use std::iter::Iterator;
 
 use gc::{Finalize, Gc, Trace};
 
-use crate::node::{GcList, GcNode, ParseTreeNode, GetNil};
-use crate::node::expect_int;
-use crate::node::expect_list;
-use crate::node::expect_symbol;
+use crate::node::{GcList, GcNode, ParseTreeNode, GetNil, expect_int, expect_list, expect_symbol};
 use crate::scope::Scope;
 
 
@@ -33,9 +30,9 @@ impl Scope <'_> {
                 // println!("plus");
 
                 return Gc::new(ParseTreeNode::Int(
-                    expect_int(*self.eval(expect_arg()))
+                    expect_int(self.eval(expect_arg()))
                     +
-                    expect_int(*self.eval(expect_arg()))
+                    expect_int(self.eval(expect_arg()))
                 ));
             }
             
@@ -62,7 +59,7 @@ impl Scope <'_> {
 
             "define" => {
                 // println!("define");
-                let symbol = expect_symbol(*expect_arg());
+                let symbol = expect_symbol(expect_arg());
                 let value = self.eval(expect_arg());
                 self.set(
                     (*symbol).to_owned(),
@@ -89,7 +86,7 @@ impl Scope <'_> {
             "lambda" => {
                 return Gc::new(ParseTreeNode::Function{
                     // TODO: expect_list)
-                    params: expect_list(*expect_arg()),
+                    params: expect_list(expect_arg()),
                     proc: expect_arg(),
                 })
             }
@@ -102,14 +99,14 @@ impl Scope <'_> {
                         // We parse the args first because we can't use self.eval after we make
                         // function scope
                         let mut args = Vec::<(GcNode, GcNode)>::new();
-                        for param in *params {
-                            args.push((param, self.eval(expect_arg())))
+                        for param in &*params {
+                            args.push((*param, self.eval(expect_arg())));
                         }
                         // Populate a new scope with args bound to params
                         let mut function_scope = self.new_child();
                         for param_value in args {
                             let (param, value) = param_value;
-                            let symbol = expect_symbol(*param);
+                            let symbol = expect_symbol(param);
                             function_scope.set(
                                 (*symbol).to_owned(),
                                 value,
