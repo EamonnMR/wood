@@ -70,7 +70,7 @@ impl ParseTreeNode {
 
 // TODO: use enum_methods?
 pub fn expect_list(node: GcNode) -> GcList {
-    match *node {
+    match &*node {
         ParseTreeNode::List(list) => {
             return list.clone();
         }
@@ -96,9 +96,9 @@ pub fn expect_int(node: GcNode) -> i32 {
 }
 
 pub fn expect_symbol(node: GcNode) -> GcStr {
-    match *node {
+    match &*node {
         ParseTreeNode::Symbol(string) => {
-            return string;
+            return string.clone();
         }
         _ => {
             println!("Expected a string, got: ");
