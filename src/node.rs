@@ -19,15 +19,15 @@ pub enum ParseTreeNode {
     }
 }
 
-pub fn GcList_new() -> GcList {
+pub fn new_gclist() -> GcList {
     Gc::new( Vec::<Gc<ParseTreeNode>>::new() )
 }
 
-pub fn GetNil() -> GcNode {
+pub fn new_nil() -> GcNode {
     Gc::new(ParseTreeNode::Nil)
 }
 
-pub fn GetBlankStr() -> GcStr {
+pub fn new_blank_str() -> GcStr {
     Gc::new(String::from(""))
 }
 
@@ -77,7 +77,7 @@ pub fn expect_list(node: GcNode) -> GcList {
         _ => {
             println!("Expected list, got: ");
             node.print_node(20);
-            return Gc::new(Vec::<Gc<ParseTreeNode>>::new())
+            return new_gclist();
         }
     }
 }
@@ -103,7 +103,7 @@ pub fn expect_symbol(node: GcNode) -> GcStr {
         _ => {
             println!("Expected a string, got: ");
             node.print_node(20);
-            return GetBlankStr();
+            return new_blank_str();
         }
     }
 }

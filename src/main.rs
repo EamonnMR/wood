@@ -2,8 +2,6 @@ use std::io;
 use std::fs;
 use std::env;
 
-use gc::{Finalize, Gc, Trace};
-
 mod node;
 mod parse;
 mod scope;

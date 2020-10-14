@@ -1,10 +1,6 @@
-
-use gc::{Finalize, Gc, Trace};
-
-
 use std::collections::HashMap;
 
-pub use crate::node::{ParseTreeNode, GcNode, GetNil};
+pub use crate::node::{ParseTreeNode, GcNode, new_nil};
 
 pub struct Scope <'a>{
     pub parent: Option<&'a Scope<'a>>,
@@ -26,7 +22,7 @@ impl Scope <'_> {
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return GetNil();
+                        return new_nil();
                     }
                 }
             }

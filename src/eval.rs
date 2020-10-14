@@ -1,7 +1,7 @@
 use crate::scope::Scope;
-use crate::node::{ParseTreeNode, GcNode, GetNil, GetBlankStr};
+use crate::node::{ParseTreeNode, GcNode, new_nil, new_blank_str};
 
-use gc::{Finalize, Gc, Trace};
+use gc::{Gc};
 
 impl Scope <'_>{
     pub fn eval(&mut self, node: GcNode) -> GcNode {
@@ -10,7 +10,7 @@ impl Scope <'_>{
                 // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
-                return GetNil();
+                return new_nil();
             }
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("Eval symbol: {}", symbol);
@@ -21,9 +21,9 @@ impl Scope <'_>{
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
                 //println!("How did this function literal get eval'd We don't have function literals!");
-                return GetNil();
+                return new_nil();
             }
-            ParseTreeNode::Int(int) => {
+            ParseTreeNode::Int(_int) => {
                 //println!("Eval int: {}", int);
                 return node.clone();
             }
@@ -42,14 +42,14 @@ impl Scope <'_>{
                             // TODO: Print some sort of error
                             println!("cannot parse func name - what is it?");
                             func_name.print_node(0);
-                            return Gc::new(ParseTreeNode::Symbol( GetBlankStr() ));
+                            return Gc::new(ParseTreeNode::Symbol( new_blank_str() ));
                         } 
                     }
                     
                 } else {
                     //.TODO: Some sort of error
                     println!("Cannot parse fname and args from.");
-                    return Gc::new(ParseTreeNode::Symbol( GetBlankStr() ));
+                    return Gc::new(ParseTreeNode::Symbol( new_blank_str() ));
                 }
             }
         }

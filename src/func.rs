@@ -1,8 +1,8 @@
 use std::iter::Iterator;
 
-use gc::{Finalize, Gc, Trace};
+use gc::{Gc};
 
-use crate::node::{GcList, GcNode, ParseTreeNode, GetNil, expect_int, expect_list, expect_symbol, GetBlankStr};
+use crate::node::{GcNode, ParseTreeNode, new_nil, expect_int, expect_list, expect_symbol, new_blank_str};
 use crate::scope::Scope;
 
 
@@ -20,7 +20,7 @@ impl Scope <'_> {
                 }
                 None => {
                     // println!("Expected an additional argument");
-                    return GetNil();
+                    return new_nil();
                 }
             }
         };
@@ -38,11 +38,11 @@ impl Scope <'_> {
             
             "print" => {
                 (*expect_arg()).print_node(0);
-                return GetNil();
+                return new_nil();
             }
             
             "begin" => {
-                let mut last_value = GetNil();
+                let mut last_value = new_nil();
                 loop {
                     let arg = expect_arg();
                     match *arg {
@@ -54,7 +54,6 @@ impl Scope <'_> {
                         }
                     }
                 }
-                return last_value;
             }
 
             "define" => {
@@ -66,7 +65,7 @@ impl Scope <'_> {
                     value,
                 );
 
-                return GetNil()
+                return new_nil()
             }
 
             "locals" => {
@@ -76,7 +75,7 @@ impl Scope <'_> {
                     println!("{}: ", key);
                     (*value).print_node(20);
                 }
-                return GetNil();
+                return new_nil();
             }
             
             "quote" => {
@@ -118,7 +117,7 @@ impl Scope <'_> {
                     _ => {
                         println!( "expected function, got");
                         possible_func.print_node( 3 );
-                        return Gc::new(ParseTreeNode::Symbol(GetBlankStr()));
+                        return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
                     }
                 }
             }

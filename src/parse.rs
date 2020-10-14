@@ -1,4 +1,4 @@
-pub use crate::node::{ParseTreeNode, GcNode, GcList, GcList_new};
+pub use crate::node::{ParseTreeNode, GcNode, GcList, new_gclist};
 use gc::{Gc};
 
 fn preprocess_source(source: String) -> String {
