@@ -1,13 +1,31 @@
-#[derive(Clone)]
+use gc::{Finalize, Gc, Trace};
+
+pub type GcNode = Gc<ParseTreeNode>;
+
+pub type GcList = Gc<Vec<GcNode>>;
+
+pub type GcStr = Gc<String>;
+pub use crate::scope::{GcScope};
+
+#[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
-    Symbol(String),
-    List(Vec<ParseTreeNode>),
+    Symbol(GcStr),
+    List(GcList),
     Int(i32),
     Nil,
-    Function{
-        params: Vec<ParseTreeNode>,
-        proc: Box<ParseTreeNode>,
-    }
+    Function { params: GcList, proc: GcNode, scope: GcScope},
+}
+
+pub fn new_gclist() -> GcList {
+    Gc::new(Vec::<Gc<ParseTreeNode>>::new())
+}
+
+pub fn new_nil() -> GcNode {
+    Gc::new(ParseTreeNode::Nil)
+}
+
+pub fn new_blank_str() -> GcStr {
+    Gc::new(String::from(""))
 }
 
 impl ParseTreeNode {
@@ -15,7 +33,7 @@ impl ParseTreeNode {
         // https://users.rust-lang.org/t/fill-string-with-repeated-character/1121/3
         let indent = std::iter::repeat(" ").take(depth).collect::<String>();
 
-        match *self{
+        match *self {
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("{}Symbol: {}",indent, symbol);
                 println!("{}{}", indent, symbol);
@@ -26,63 +44,75 @@ impl ParseTreeNode {
             }
             ParseTreeNode::List(ref list) => {
                 println!("{}(", indent);
-                for node in list {
-                    node.print_node( depth + 1 );
+                for node in &**list {
+                    (*node).print_node(depth + 1);
                 }
                 println!("{})", indent);
             }
-            ParseTreeNode::Function { ref params, ref proc } => {
-                println!("Lambda params (");
-                for node in params {
-                    node.print_node( depth + 1 );
+            ParseTreeNode::Function {
+                ref params,
+                ref proc,
+                ref scope,
+            } => {
+                println!("{}Lambda params (", indent);
+                for node in &**params {
+                    node.print_node(depth + 1);
                 }
-                println!(") proc: ");
-                    proc.print_node(depth + 1);
-                println!(")");
+                println!("{}) proc: ", indent);
+                proc.print_node(depth + 1);
+                println!("{})", indent);
+                println!("{}scope: ", indent);
+                scope.borrow().print_locals(depth + 1)
             }
-            ParseTreeNode::Nil  => {
+            ParseTreeNode::Nil => {
                 println!("{}# Nil Node", indent);
+            }
+        }
+    }
+
+    // "expect" functions. These are similar to Enum Methods
+    // https://docs.rs/enum-methods/0.0.8/enum_methods/
+    // But with the critical difference that they don't panic
+    // if they don't get what they expect. I want the interpreter
+    // to be able to gracefully handle the unexpected.
+
+    pub fn expect_symbol(&self) -> GcStr {
+        match &*self {
+            ParseTreeNode::Symbol(string) => {
+                return string.clone();
+            }
+            _ => {
+                println!("Expected a string, got: ");
+                self.print_node(20);
+                return new_blank_str();
+            }
+        }
+    }
+    pub fn expect_list(&self) -> GcList {
+        match &*self {
+            ParseTreeNode::List(list) => {
+                return list.clone();
+            }
+            _ => {
+                println!("Expected list, got: ");
+                self.print_node(20);
+                return new_gclist();
+            }
+        }
+    }
+
+    pub fn expect_int(&self) -> i32 {
+        match *self {
+            ParseTreeNode::Int(int) => {
+                return int;
+            }
+            _ => {
+                println!("Expected an int, got: ");
+                self.print_node(20);
+                return 0;
             }
         }
     }
 }
 
 // TODO: use enum_methods?
-pub fn expect_list(node: ParseTreeNode) -> Vec<ParseTreeNode> {
-    match node {
-        ParseTreeNode::List(list) => {
-            return list;
-        }
-        _ => {
-            println!("Expected list, got: ");
-            node.print_node(20);
-            return Vec::<ParseTreeNode>::new()
-        }
-    }
-}
-
-pub fn expect_int(node: ParseTreeNode) -> i32 {
-    match node {
-        ParseTreeNode::Int(int) => {
-            return int;
-        }
-        _ => {
-            println!("Expected an int, got: ");
-            node.print_node(20);
-            return 0;
-        }
-    }
-}
-
-pub fn expect_symbol(node: ParseTreeNode) -> String {
-    match node {
-        ParseTreeNode::Symbol(string) => {
-            return string;
-        }
-        _ => {
-            println!("Expected a string, got: ");
-            node.print_node(20);
-            return String::from("");
-        }
-    }
-}
