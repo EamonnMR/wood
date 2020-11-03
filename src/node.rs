@@ -5,6 +5,7 @@ pub type GcNode = Gc<ParseTreeNode>;
 pub type GcList = Gc<Vec<GcNode>>;
 
 pub type GcStr = Gc<String>;
+pub use crate::scope::{GcScope};
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
@@ -12,7 +13,7 @@ pub enum ParseTreeNode {
     List(GcList),
     Int(i32),
     Nil,
-    Function { params: GcList, proc: GcNode },
+    Function { params: GcList, proc: GcNode, scope: GcScope},
 }
 
 pub fn new_gclist() -> GcList {
@@ -51,14 +52,17 @@ impl ParseTreeNode {
             ParseTreeNode::Function {
                 ref params,
                 ref proc,
+                ref scope,
             } => {
-                println!("Lambda params (");
+                println!("{}Lambda params (", indent);
                 for node in &**params {
                     node.print_node(depth + 1);
                 }
-                println!(") proc: ");
+                println!("{}) proc: ", indent);
                 proc.print_node(depth + 1);
-                println!(")");
+                println!("{})", indent);
+                println!("{}scope: ", indent);
+                scope.borrow().print_locals(depth + 1)
             }
             ParseTreeNode::Nil => {
                 println!("{}# Nil Node", indent);
