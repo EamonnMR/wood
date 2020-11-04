@@ -13,7 +13,7 @@ pub enum ParseTreeNode {
     List(GcList),
     Int(i32),
     Nil,
-    Function { params: GcList, proc: GcNode, scope: GcScope},
+    Function { params: GcList, proc: GcNode, closure_scope: GcScope},
 }
 
 pub fn new_gclist() -> GcList {
@@ -52,7 +52,7 @@ impl ParseTreeNode {
             ParseTreeNode::Function {
                 ref params,
                 ref proc,
-                ref scope,
+                ref closure_scope,
             } => {
                 println!("{}Lambda params (", indent);
                 for node in &**params {
@@ -62,7 +62,7 @@ impl ParseTreeNode {
                 proc.print_node(depth + 1);
                 println!("{})", indent);
                 println!("{}scope: ", indent);
-                scope.borrow().print_locals(depth + 1)
+                closure_scope.borrow().print_locals(depth + 1)
             }
             ParseTreeNode::Nil => {
                 println!("{}# Nil Node", indent);

@@ -18,7 +18,7 @@ pub fn eval(scope: GcScope, node: GcNode) -> GcNode {
             // TODO: Should symbols eval to themselves if they're not in scope?
             // return ParseTreeNode::Symbol(symbol.to_owned());
         }
-        ParseTreeNode::Function { params: _, proc: _, scope: _ } => {
+        ParseTreeNode::Function { params: _, proc: _, closure_scope: _ } => {
             // Figure out the semantics here. I don't think we'd ever reach this...
             //println!("How did this function literal get eval'd We don't have function literals!");
             return new_nil();

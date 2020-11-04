@@ -75,14 +75,14 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
             return Gc::new(ParseTreeNode::Function {
                 params: expect_arg().expect_list(),
                 proc: expect_arg(),
-                scope: scope.clone(),
+                closure_scope: scope.clone(),
             });
         }
 
         _ => {
             let possible_func = scope.borrow().get(&String::from(fname));
             match &*possible_func {
-                ParseTreeNode::Function { params, proc, scope } => {
+                ParseTreeNode::Function { params, proc, closure_scope } => {
                     // Bind arguments to params in the function scope
                     // We parse the args first because we can't use scope.eval after we make
                     // function scope
@@ -92,7 +92,7 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
                     }
                     // Populate a new scope with args bound to params
                     let mut function_scope = Scope {
-                        parent: Some(scope.clone()),
+                        parent: Some(closure_scope.clone()),
                         locals: HashMap::new(),
                     };
                     for param_value in args {
