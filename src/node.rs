@@ -5,7 +5,7 @@ pub type GcNode = Gc<ParseTreeNode>;
 pub type GcList = Gc<Vec<GcNode>>;
 
 pub type GcStr = Gc<String>;
-pub use crate::scope::{GcScope};
+pub use crate::scope::GcScope;
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
@@ -13,7 +13,11 @@ pub enum ParseTreeNode {
     List(GcList),
     Int(i32),
     Nil,
-    Function { params: GcList, proc: GcNode, closure_scope: GcScope},
+    Function {
+        params: GcList,
+        proc: GcNode,
+        closure_scope: GcScope,
+    },
 }
 
 pub fn new_gclist() -> GcList {

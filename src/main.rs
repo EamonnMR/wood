@@ -8,10 +8,10 @@ mod node;
 mod parse;
 mod scope;
 
+pub use crate::eval::eval;
 pub use crate::node::ParseTreeNode;
 pub use crate::parse::parse;
 pub use crate::scope::Scope;
-pub use crate::eval::eval;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

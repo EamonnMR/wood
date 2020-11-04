@@ -1,11 +1,11 @@
-use std::iter::Iterator;
 use std::collections::HashMap;
+use std::iter::Iterator;
 
 use gc::{Gc, GcCell};
 
-use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
-use crate::scope::{Scope, GcScope};
 use crate::eval::eval;
+use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
+use crate::scope::{GcScope, Scope};
 
 pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
     let mut args_index = argv.iter();
@@ -27,7 +27,8 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
             // println!("plus");
 
             return Gc::new(ParseTreeNode::Int(
-                eval(scope.clone(), expect_arg()).expect_int() + eval(scope.clone(), expect_arg()).expect_int(),
+                eval(scope.clone(), expect_arg()).expect_int()
+                    + eval(scope.clone(), expect_arg()).expect_int(),
             ));
         }
 
@@ -82,7 +83,11 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
         _ => {
             let possible_func = scope.borrow().get(&String::from(fname));
             match &*possible_func {
-                ParseTreeNode::Function { params, proc, closure_scope } => {
+                ParseTreeNode::Function {
+                    params,
+                    proc,
+                    closure_scope,
+                } => {
                     // Bind arguments to params in the function scope
                     // We parse the args first because we can't use scope.eval after we make
                     // function scope

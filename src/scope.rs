@@ -1,5 +1,5 @@
+use gc::{Finalize, Gc, GcCell, Trace};
 use std::collections::HashMap;
-use gc::{Finalize, Gc, Trace, GcCell};
 
 pub use crate::node::{new_nil, GcNode, ParseTreeNode};
 
@@ -11,7 +11,7 @@ pub struct Scope {
 
 pub type GcScope = Gc<GcCell<Scope>>;
 
-impl Scope{
+impl Scope {
     pub fn get(&self, key: &String) -> GcNode {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
@@ -37,7 +37,7 @@ impl Scope{
         self.locals.insert(key, value);
     }
 
-    pub fn new() -> Scope{
+    pub fn new() -> Scope {
         Scope {
             parent: None,
             locals: HashMap::new(),
@@ -54,7 +54,7 @@ impl Scope{
     pub fn gc_of(self) -> GcScope {
         Gc::new(GcCell::new(self))
     }
-    pub fn print_locals(&self, indent: usize){
+    pub fn print_locals(&self, indent: usize) {
         for (key, value) in self.locals.iter() {
             println!("{}: ", key);
             (*value).print_node(indent + 5);
