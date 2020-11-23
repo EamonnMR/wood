@@ -22,14 +22,25 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
         }
     };
 
+    let mut expect_int_arg = |scope: &GcScope| -> i32 {
+        eval(scope.clone(), expect_arg()).expect_int()
+    };
+
     match fname {
         "+" => {
-            // println!("plus");
+            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) + expect_int_arg(&scope)))
+        }
+        
+        "-" => {
+            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) - expect_int_arg(&scope)))
+        }
 
-            return Gc::new(ParseTreeNode::Int(
-                eval(scope.clone(), expect_arg()).expect_int()
-                    + eval(scope.clone(), expect_arg()).expect_int(),
-            ));
+        "*" => {
+            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) * expect_int_arg(&scope)))
+        }
+        
+        "/" => {
+            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) / expect_int_arg(&scope)))
         }
 
         "print" => {
