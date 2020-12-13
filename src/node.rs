@@ -1,11 +1,11 @@
 use gc::{Finalize, Gc, Trace};
-
 pub type GcNode = Gc<ParseTreeNode>;
 
 pub type GcList = Gc<Vec<GcNode>>;
 
 pub type GcStr = Gc<String>;
 pub use crate::scope::GcScope;
+pub use crate::scope::Scope;
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
@@ -17,7 +17,7 @@ pub enum ParseTreeNode {
         params: GcList,
         proc: GcNode,
         closure_scope: GcScope,
-    },
+    }
 }
 
 pub fn new_gclist() -> GcList {
@@ -114,6 +114,19 @@ impl ParseTreeNode {
                 println!("Expected an int, got: ");
                 self.print_node(20);
                 return 0;
+            }
+        }
+    }
+
+    pub fn expect_function(&self) -> (GcList, GcNode, GcScope) {
+        match &*self {
+            ParseTreeNode::Function {params, proc, closure_scope} => {
+                (params.clone(), proc.clone(), closure_scope.clone())
+            }
+            _ => {
+                println!("Expected a function, got: ");
+                self.print_node(20);
+                (new_gclist(), new_nil(), Scope::new().gc_of())
             }
         }
     }

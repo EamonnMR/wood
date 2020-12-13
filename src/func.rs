@@ -4,7 +4,7 @@ use std::iter::Iterator;
 use gc::{Gc, GcCell};
 
 use crate::eval::eval;
-use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
+use crate::node::{new_blank_str, new_nil, new_gclist, GcNode, ParseTreeNode};
 use crate::scope::{GcScope, Scope};
 
 pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
@@ -42,6 +42,23 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
         "/" => {
             Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) / expect_int_arg(&scope)))
         }
+        /*
+        "map" => {
+            let args, proc, scope = expect_arg().expect_function()
+            let list = expect_arg().expect_list().clone()
+            return_list = new_gclist();
+            for value in list:
+        */
+
+        "car" => {
+            expect_arg().expect_list().clone()[0].clone()
+        }
+/*
+        "cdr" => {
+            Gc::new(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
+        }
+*/
+        /* cons */
 
         "print" => {
             (*expect_arg()).print_node(0);
