@@ -1,18 +1,19 @@
-use gc::{Finalize, Gc, GcCell, Trace};
 use std::collections::HashMap;
 
-pub use crate::node::{new_nil, GcNode, ParseTreeNode};
+pub use crate::node::{NodeHandle, ParseTreeNode};
 
-#[derive(Finalize, Trace)]
+pub type ScopeHandle = usize;
+
 pub struct Scope {
-    pub parent: Option<GcScope>,
-    pub locals: HashMap<String, GcNode>,
+    pub parent: Option<ScopeHandle>,
+    pub locals: HashMap<String, NodeHandle>,
+    pub own_handle: ScopeHandle,
 }
 
-pub type GcScope = Gc<GcCell<Scope>>;
+pub type ScoVec = Vec<Scope>
 
 impl Scope {
-    pub fn get(&self, key: &String) -> GcNode {
+    pub fn get(&self, &mut Vec<Scope> scopes, key: &String) -> NodeHandle {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
@@ -21,12 +22,12 @@ impl Scope {
             None => {
                 match self.parent {
                     Some(ref parent) => {
-                        return parent.borrow().get(key);
+                        return scopes[parent].borrow().get(key);
                     }
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return new_nil();
+                        return ParseTreeNode.nil;
                     }
                 }
             }

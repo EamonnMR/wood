@@ -1,35 +1,21 @@
-use gc::{Finalize, Gc, Trace};
-pub type GcNode = Gc<ParseTreeNode>;
-
-pub type GcList = Gc<Vec<GcNode>>;
-
-pub type GcStr = Gc<String>;
-pub use crate::scope::GcScope;
 pub use crate::scope::Scope;
+pub use crate::scope::ScopeHandle;
+
+pub type NodeHandle = usize;
+
+pub type NodeHandleVec = Vec<NodeHandle>;
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
-    Symbol(GcStr),
-    List(GcList),
+    Symbol(String),
+    List(Vec<usize>),
     Int(i32),
     Nil,
     Function {
-        params: GcList,
-        proc: GcNode,
-        closure_scope: GcScope,
+        params: ScopeHandle,
+        proc: NodeHandle,
+        closure_scope: ScopeHandle,
     }
-}
-
-pub fn new_gclist() -> GcList {
-    Gc::new(Vec::<Gc<ParseTreeNode>>::new())
-}
-
-pub fn new_nil() -> GcNode {
-    Gc::new(ParseTreeNode::Nil)
-}
-
-pub fn new_blank_str() -> GcStr {
-    Gc::new(String::from(""))
 }
 
 impl ParseTreeNode {
@@ -80,7 +66,7 @@ impl ParseTreeNode {
     // if they don't get what they expect. I want the interpreter
     // to be able to gracefully handle the unexpected.
 
-    pub fn expect_symbol(&self) -> GcStr {
+    pub fn expect_symbol(&self) -> String {
         match &*self {
             ParseTreeNode::Symbol(string) => {
                 return string.clone();
@@ -92,15 +78,15 @@ impl ParseTreeNode {
             }
         }
     }
-    pub fn expect_list(&self) -> GcList {
+    pub fn expect_list(&self) -> NodeHandleList {
         match &*self {
             ParseTreeNode::List(list) => {
-                return list.clone();
+                return list;
             }
             _ => {
                 println!("Expected list, got: ");
                 self.print_node(20);
-                return new_gclist();
+                return NodeHandleList();
             }
         }
     }
@@ -118,15 +104,15 @@ impl ParseTreeNode {
         }
     }
 
-    pub fn expect_function(&self) -> (GcList, GcNode, GcScope) {
+    pub fn expect_function(&self) -> (ScopeHandle, NodeHandle, ScopeHandle) {
         match &*self {
             ParseTreeNode::Function {params, proc, closure_scope} => {
-                (params.clone(), proc.clone(), closure_scope.clone())
+                (params, proc, closure_scope)
             }
             _ => {
                 println!("Expected a function, got: ");
                 self.print_node(20);
-                (new_gclist(), new_nil(), Scope::new().gc_of())
+                (0,0,0) 
             }
         }
     }
