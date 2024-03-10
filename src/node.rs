@@ -1,9 +1,8 @@
 pub use crate::scope::Scope;
 pub use crate::scope::ScopeHandle;
 
-pub type NodeHandle = usize;
 
-pub type NodeHandleVec = Vec<NodeHandle>;
+pub type NodeHandleVec = Vec<Handle>;
 
 #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {

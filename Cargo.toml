@@ -12,5 +12,4 @@ authors = [ "Eamonn McHugh-Roohr <eamonn.m.r@gmail.com>" ]
 name = "wood"
 path = "src/main.rs"
 
-[dependencies]
-gc = { version = "0.3", features = ["derive"] }
+# [dependencies]

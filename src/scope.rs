@@ -52,9 +52,6 @@ impl Scope {
         }
     }
 
-    pub fn gc_of(self) -> GcScope {
-        Gc::new(GcCell::new(self))
-    }
     pub fn print_locals(&self, indent: usize) {
         for (key, value) in self.locals.iter() {
             println!("{}: ", key);

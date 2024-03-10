@@ -1,20 +1,19 @@
 use crate::func::function_call;
-use crate::node::{new_blank_str, new_nil, GcNode, ParseTreeNode};
-use crate::scope::GcScope;
+use crate::scope:Scope;
+use crate::node::{new_blank_str, new_nil, ParseTreeNode, new_nil};
+use crate::arena::{Arena, Handle}
 
-use gc::Gc;
-
-pub fn eval(scope: GcScope, node: GcNode) -> GcNode {
-    match *node {
+pub fn eval(arena: Arena, scopeH: Handle, nodeH: Handle) -> Handle {
+    match arena.deref_node(nodeH) {
         ParseTreeNode::Nil => {
             // println!("Error: nil node made it into the final parse tree");
             // Just returning something to satisfy the compiler
             // TODO: Panic! ?
-            return new_nil();
+            return Arena.nilptr();
         }
         ParseTreeNode::Symbol(ref symbol) => {
             // println!("Eval symbol: {}", symbol);
-            return scope.borrow().get(symbol);
+            return arena.deref_scope(scopeH).get(symbol);
             // TODO: Should symbols eval to themselves if they're not in scope?
             // return ParseTreeNode::Symbol(symbol.to_owned());
         }
@@ -24,12 +23,12 @@ pub fn eval(scope: GcScope, node: GcNode) -> GcNode {
             closure_scope: _,
         } => {
             // Figure out the semantics here. I don't think we'd ever reach this...
-            //println!("How did this function literal get eval'd We don't have function literals!");
-            return new_nil();
+            println!("How did this function literal get eval'd We don't have function literals!");
+            return arena.nilptr();
         }
         ParseTreeNode::Int(_int) => {
             //println!("Eval int: {}", int);
-            return node.clone();
+            return handle;
         }
         ParseTreeNode::List(ref list) => {
             if let Some((func_name, args)) = list.split_first() {

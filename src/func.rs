@@ -1,13 +1,11 @@
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-use gc::{Gc, GcCell};
-
 use crate::eval::eval;
-use crate::node::{new_blank_str, new_nil, new_gclist, GcNode, ParseTreeNode};
-use crate::scope::{GcScope, Scope};
+use crate::arena::Arena
+use crate::node::{new_blank_str, new_nil, ParseTreeNode, NodeHandleVec};
 
-pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
+pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Handle {
     let mut args_index = argv.iter();
 
     let mut expect_arg = || -> GcNode {
@@ -22,25 +20,25 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
         }
     };
 
-    let mut expect_int_arg = |scope: &GcScope| -> i32 {
-        eval(scope.clone(), expect_arg()).expect_int()
+    let mut expect_int_arg = || -> i32 {
+        arena.deref_node(eval(arena, scope.own_handle, expect_arg())).expect_int()
     };
 
     match fname {
         "+" => {
-            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) + expect_int_arg(&scope)))
+            Arena.add_node(ParseTreeNode::Int(expect_int_arg(&scope) + expect_int_arg(&scope)))
         }
         
         "-" => {
-            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) - expect_int_arg(&scope)))
+            Arena.add_node(ParseTreeNode::Int(expect_int_arg(&scope) - expect_int_arg(&scope)))
         }
 
         "*" => {
-            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) * expect_int_arg(&scope)))
+            Arena.add_node(ParseTreeNode::Int(expect_int_arg(&scope) * expect_int_arg(&scope)))
         }
         
         "/" => {
-            Gc::new(ParseTreeNode::Int(expect_int_arg(&scope) / expect_int_arg(&scope)))
+            Arena.add_node(ParseTreeNode::Int(expect_int_arg(&scope) / expect_int_arg(&scope)))
         }
         /*
         "map" => {
@@ -50,9 +48,9 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
             for value in list:
         */
 
-        "car" => {
-            expect_arg().expect_list().clone()[0].clone()
-        }
+        // "car" => {
+        //     expect_arg().expect_list().clone()[0].clone()
+        // }
 /*
         "cdr" => {
             Gc::new(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
@@ -66,15 +64,15 @@ pub fn function_call(scope: GcScope, fname: &str, argv: Vec<GcNode>) -> GcNode {
         }
 
         "begin" => {
-            let mut last_value = new_nil();
+            let mut last_handle = Arena.nilptr()
             loop {
                 let arg = expect_arg();
                 match *arg {
                     ParseTreeNode::Nil => {
-                        return last_value;
+                        return last_handle;
                     }
                     _ => {
-                        last_value = eval(scope.clone(), arg);
+                        last_handle = eval(scope.clone(), arg);
                     }
                 }
             }
