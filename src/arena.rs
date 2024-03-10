@@ -1,7 +1,7 @@
 //Use templates
 
-use crate::scope::Scope
-use crate::node::ParseTreeNode
+use crate::scope::Scope;
+use crate::node::ParseTreeNode;
 
 struct SubArena<T> {
   Vec<T> memory,
@@ -29,9 +29,9 @@ struct Arena {
 
 impl Arena {
   fn add_scope(scope: Scope) => Handle {
-    let handle = scopes.add(scope)
-    scope.own_handle = handle
-    return handle
+    let handle = scopes.add(scope);
+    scope.own_handle = handle;
+    return handle;
   }
 
   fn add_node(node: ParseTreeNode) => Handle {
@@ -39,7 +39,7 @@ impl Arena {
   }
 
   fn deref_scope(handle: Handle) => Opselftion(&Scope) {
-    return scopes.deref(handle)
+    return scopes.deref(handle);
   }
 
   fn deref_node(handle: Handle) => Option(&ParseTreeNode) {
@@ -47,17 +47,17 @@ impl Arena {
   }
 
   fn nilptr() => Handle {
-    return 0
+    return 0;
   }
 
   pub fn new() => Self {
     let new_arena = Self {
       SubArena<Scope>::new(),
-      SubArena<ParseTreeNode>::new()
+      SubArena<ParseTreeNode>::new(),
     }
     // Create nil ptr:
-    new_arena.nodes.add(ParseTreeNode::Nil::new())
+    new_arena.nodes.add(ParseTreeNode::Nil::new());
 
-    return new_arena
+    return new_arena;
   }
 }

@@ -1,7 +1,7 @@
 use crate::func::function_call;
 use crate::scope:Scope;
 use crate::node::{new_blank_str, new_nil, ParseTreeNode, new_nil};
-use crate::arena::{Arena, Handle}
+use crate::arena::{Arena, Handle};
 
 pub fn eval(arena: Arena, scopeH: Handle, nodeH: Handle) -> Handle {
     match arena.deref_node(nodeH) {
@@ -42,13 +42,13 @@ pub fn eval(arena: Arena, scopeH: Handle, nodeH: Handle) -> Handle {
                         // TODO: Print some sort of error
                         println!("cannot parse func name - what is it?");
                         func_name.print_node(0);
-                        return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
+                        return Arena.add_node(ParseTreeNode::Symbol(new_blank_str()));
                     }
                 }
             } else {
                 //.TODO: Some sort of error
                 println!("Cannot parse fname and args from.");
-                return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
+                return Arena.add_node(ParseTreeNode::Symbol(new_blank_str()));
             }
         }
     }

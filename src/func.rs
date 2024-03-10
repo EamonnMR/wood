@@ -99,7 +99,7 @@ pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Ha
         }
 
         "lambda" => {
-            return Gc::new(ParseTreeNode::Function {
+            return arena.add_node(ParseTreeNode::Function {
                 params: expect_arg().expect_list(),
                 proc: expect_arg(),
                 closure_scope: scope.clone(),
@@ -117,14 +117,13 @@ pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Ha
                     // Bind arguments to params in the function scope
                     // We parse the args first because we can't use scope.eval after we make
                     // function scope
-                    let mut args = Vec::<(GcNode, GcNode)>::new();
+                    let mut args = Vec::<(Symbol, Handle)>::new();
                     for param in &*params.clone() {
-                        args.push((param.clone(), eval(scope.clone(), expect_arg())));
+                        args.push((param.clone(), eval(arena, scope.clone(), expect_arg())));
                     }
                     // Populate a new scope with args bound to params
                     let mut function_scope = Scope {
-                        parent: Some(closure_scope.clone()),
-                        locals: HashMap::new(),
+                        parent: closure_scope.own_handle,
                     };
                     for param_value in args {
                         let (param, value) = param_value;
@@ -132,7 +131,7 @@ pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Ha
                         function_scope.set((*symbol).to_owned(), value);
                     }
                     // Evaluate the function
-                    return eval(Gc::new(GcCell::new(function_scope)), proc.clone());
+                    return eval(arena, function_scope, proc);
                 }
                 _ => {
                     println!("expected function, got");
