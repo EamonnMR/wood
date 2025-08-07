@@ -1,5 +1,5 @@
 pub use crate::node::{ParseTreeNode, NodeHandleList};
-pub use crate::arena::{Arena, Handle}
+pub use crate::arena::{Arena, Handle};
 
 fn preprocess_source(source: String) -> String {
     // add spaces around parens so they are tokenized
@@ -55,7 +55,7 @@ fn parse_list(token_iter: &mut std::str::SplitWhitespace) -> Handle {
     return Arena.add_node(ParseTreeNode::List(list));
 }
 
-pub fn parse(arena: mut Arena, source: String) -> Handle {
+pub fn parse(mut arena: Arena, source: String) -> Handle {
     let preproc = preprocess_source(source);
     let mut tokens = preproc.split_whitespace();
 

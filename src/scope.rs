@@ -10,10 +10,10 @@ pub struct Scope {
     pub own_handle: ScopeHandle,
 }
 
-pub type ScoVec = Vec<Scope>
+pub type ScoVec = Vec<Scope>;
 
 impl Scope {
-    pub fn get(&self, &mut Vec<Scope> scopes, key: &String) -> NodeHandle {
+    pub fn get(&self, scopes: &mut ScoVec, key: &String) -> NodeHandle {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
@@ -42,6 +42,7 @@ impl Scope {
         Scope {
             parent: None,
             locals: HashMap::new(),
+            own_handle: None
         }
     }
 
@@ -49,7 +50,8 @@ impl Scope {
         Scope {
             parent: Some(self.own_handle),
             locals: HashMap::new(),
-        }
+            own_handle: None
+        };
     }
 
     pub fn print_locals(&self, indent: usize) {

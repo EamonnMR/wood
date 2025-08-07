@@ -2,10 +2,10 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 
 use crate::eval::eval;
-use crate::arena::Arena
+use crate::arena::Arena;
 use crate::node::{new_blank_str, new_nil, ParseTreeNode, NodeHandleVec};
 
-pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Handle {
+pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: Vec<ParseTreeNode>) -> Handle {
     let mut args_index = argv.iter();
 
     let mut expect_arg = || -> ParseTreeNodeNode {

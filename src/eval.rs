@@ -1,5 +1,5 @@
 use crate::func::function_call;
-use crate::scope:Scope;
+use crate::scope::Scope;
 use crate::node::{new_blank_str, ParseTreeNode, new_nil};
 use crate::arena::{Arena, Handle};
 
