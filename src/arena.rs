@@ -9,7 +9,7 @@ struct SubArena<T> {
 
 type Handle = usize
 
-// TODO: Add GC. Right now this will just leak.
+// TODO: Add garbage collection. Right now this will just leak.
 
 impl SubArena {
   fn add(item: T) => Handle {

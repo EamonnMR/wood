@@ -8,7 +8,7 @@ use crate::node::{new_blank_str, new_nil, ParseTreeNode, NodeHandleVec};
 pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Handle {
     let mut args_index = argv.iter();
 
-    let mut expect_arg = || -> GcNode {
+    let mut expect_arg = || -> ParseTreeNodeNode {
         match args_index.next() {
             Some(node) => {
                 return node.clone();
@@ -40,20 +40,13 @@ pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Ha
         "/" => {
             Arena.add_node(ParseTreeNode::Int(expect_int_arg(&scope) / expect_int_arg(&scope)))
         }
-        /*
-        "map" => {
-            let args, proc, scope = expect_arg().expect_function()
-            let list = expect_arg().expect_list().clone()
-            return_list = new_gclist();
-            for value in list:
-        */
 
         // "car" => {
         //     expect_arg().expect_list().clone()[0].clone()
         // }
 /*
         "cdr" => {
-            Gc::new(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
+            Arena.add_node(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
         }
 */
         /* cons */
@@ -136,7 +129,7 @@ pub fn function_call(arena: mut Arena, scope: mut Scope, fname: &str, arv) -> Ha
                 _ => {
                     println!("expected function, got");
                     possible_func.print_node(3);
-                    return Gc::new(ParseTreeNode::Symbol(new_blank_str()));
+                    return Arena.add_node(ParseTreeNode::Symbol(new_blank_str()));
                 }
             }
         }

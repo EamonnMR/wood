@@ -34,7 +34,7 @@ impl Scope {
         }
     }
 
-    pub fn set(&mut self, key: String, value: GcNode) {
+    pub fn set(&mut self, key: String, value: ParseTreeNode) {
         self.locals.insert(key, value);
     }
 
@@ -47,7 +47,7 @@ impl Scope {
 
     pub fn new_child(self) -> Scope {
         Scope {
-            parent: Some(self.gc_of()),
+            parent: Some(self.own_handle),
             locals: HashMap::new(),
         }
     }

@@ -42,8 +42,8 @@ fn parse_node(token_iter: &mut std::str::SplitWhitespace, arena: &mut Arena) -> 
     }
 }
 
-fn parse_list(token_iter: &mut std::str::SplitWhitespace) -> GcNode {
-    let mut list = Vec::<Gc<ParseTreeNode>>::new();
+fn parse_list(token_iter: &mut std::str::SplitWhitespace) -> Handle {
+    let mut list = NodeHandleList::new();
     loop {
         let (next_handle, is_terminator) = parse_node(token_iter);
         if is_terminator {
