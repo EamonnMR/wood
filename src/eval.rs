@@ -28,7 +28,7 @@ pub fn eval(arena: Arena, scopeH: Handle, node: ParseTreeNode) -> Handle {
         }
         ParseTreeNode::Int(_int) => {
             //println!("Eval int: {}", int);
-            return Arena.add_node(node);
+            return arena.add_node(node);
         }
         ParseTreeNode::List(ref list) => {
             if let Some((func_name, args)) = list.split_first() {
@@ -36,19 +36,19 @@ pub fn eval(arena: Arena, scopeH: Handle, node: ParseTreeNode) -> Handle {
                 match **func_name {
                     ParseTreeNode::Symbol(ref fname) => {
                         // println!("evaluating function: {}", fname);
-                        return function_call(arena, scope, fname, (*args).to_vec());
+                        return function_call(arena, scopeH, fname, (*args).to_vec());
                     }
                     _ => {
                         // TODO: Print some sort of error
                         println!("cannot parse func name - what is it?");
                         func_name.print_node(0);
-                        return Arena.add_node(ParseTreeNode::Symbol(""));
+                        return arena.add_node(ParseTreeNode::Symbol(""));
                     }
                 }
             } else {
                 //.TODO: Some sort of error
                 println!("Cannot parse fname and args from.");
-                return Arena.add_node(ParseTreeNode::Symbol(""));
+                return arena.add_node(ParseTreeNode::Symbol(""));
             }
         }
     }

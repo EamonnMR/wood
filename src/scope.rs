@@ -3,12 +3,11 @@ use std::collections::HashMap;
 pub use crate::node::ParseTreeNode;
 pub use crate::arena::Handle;
 
-pub type ScopeHandle = usize;
 
 pub struct Scope {
-    pub parent: Option<ScopeHandle>,
+    pub parent: Option<Handle>,
     pub locals: HashMap<String, Handle>,
-    pub own_handle: ScopeHandle,
+    pub own_handle: Handle,
 }
 
 pub type ScoVec = Vec<Scope>;
@@ -28,7 +27,7 @@ impl Scope {
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return ParseTreeNode.nil;
+                        return ParseTreeNode::Nil();
                     }
                 }
             }
@@ -48,7 +47,7 @@ impl Scope {
     }
 
     pub fn new_child(self) -> Scope {
-        Scope {
+        return Scope {
             parent: Some(self.own_handle),
             locals: HashMap::new(),
             own_handle: None

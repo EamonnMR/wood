@@ -2,43 +2,44 @@ use std::collections::HashMap;
 use std::iter::Iterator;
 
 use crate::eval::eval;
-use crate::arena::Arena;
+use crate::arena::{Arena, Handle};
 use crate::node::{ParseTreeNode, NodeHandleVec};
+use crate::scope::Scope;
 
-pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: Vec<ParseTreeNode>) -> Handle {
+pub fn function_call(mut arena: Arena, scopeH: Handle, fname: &str, mut argv: Vec<ParseTreeNode>) -> Handle {
     let mut args_index = argv.iter();
 
-    let mut expect_arg = || -> ParseTreeNodeNode {
+    let mut expect_arg = || -> ParseTreeNode {
         match args_index.next() {
             Some(node) => {
                 return node.clone();
             }
             None => {
                 // println!("Expected an additional argument");
-                return Arena.nullptr();
+                return arena.nilptr();
             }
         }
     };
 
     let mut expect_int_arg = || -> i32 {
-        arena.deref_node(eval(arena, scope.own_handle, expect_arg())).expect_int()
+        arena.deref_node(eval(arena, scopeH, expect_arg())).expect_int()
     };
 
     match fname {
         "+" => {
-            Arena.add_node(ParseTreeNode::Int(expect_int_arg() + expect_int_arg()))
+            arena.add_node(ParseTreeNode::Int(expect_int_arg() + expect_int_arg()))
         }
         
         "-" => {
-            Arena.add_node(ParseTreeNode::Int(expect_int_arg() - expect_int_arg()))
+            arena.add_node(ParseTreeNode::Int(expect_int_arg() - expect_int_arg()))
         }
 
         "*" => {
-            Arena.add_node(ParseTreeNode::Int(expect_int_arg() * expect_int_arg()))
+            arena.add_node(ParseTreeNode::Int(expect_int_arg() * expect_int_arg()))
         }
         
         "/" => {
-            Arena.add_node(ParseTreeNode::Int(expect_int_arg() / expect_int_arg()))
+            arena.add_node(ParseTreeNode::Int(expect_int_arg() / expect_int_arg()))
         }
 
         // "car" => {
@@ -46,18 +47,18 @@ pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: 
         // }
 /*
         "cdr" => {
-            Arena.add_node(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
+            arena.add_node(ParseTreeNode::List(expect_arg().expect_list().clone().tail()))
         }
 */
         /* cons */
 
         "print" => {
             (*expect_arg()).print_node(0);
-            return Arena.nullptr();
+            return arena.nilptr();
         }
 
         "begin" => {
-            let mut last_handle = Arena.nilptr();
+            let mut last_handle = arena.nilptr();
             loop {
                 let arg = expect_arg();
                 match *arg {
@@ -65,7 +66,7 @@ pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: 
                         return last_handle;
                     }
                     _ => {
-                        last_handle = eval(arena, scope.own_handle, arg);
+                        last_handle = eval(arena, scopeH, arg);
                     }
                 }
             }
@@ -74,17 +75,17 @@ pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: 
         "define" => {
             // println!("define");
             let symbol = expect_arg().expect_symbol();
-            let value = eval(arena, scope.clone(), expect_arg());
-            scope.borrow_mut().set((*symbol).to_owned(), value);
+            let value = eval(arena, scopeH, expect_arg());
+            arena.deref_scope(scopeH).set((*symbol).to_owned(), value);
 
-            return new_nil();
+            return arena.nilptr();
         }
 
         "locals" => {
             println!("locals");
             println!("(special builtin to debug)");
-            scope.borrow().print_locals(15);
-            return new_nil();
+            arena.deref_scope(scopeH).print_locals(15);
+            return arena.nilptr;
         }
 
         "quote" => {
@@ -95,12 +96,12 @@ pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: 
             return arena.add_node(ParseTreeNode::Function {
                 params: expect_arg().expect_list(),
                 proc: expect_arg(),
-                closure_scope: scope.clone(),
+                closure_scope: scopeH,
             });
         }
 
         _ => {
-            let possible_func = scope.borrow().get(&String::from(fname));
+            let possible_func = arena.deref_scope(scopeH).get(&String::from(fname));
             match &*possible_func {
                 ParseTreeNode::Function {
                     params,
@@ -110,26 +111,24 @@ pub fn function_call(mut arena: Arena, mut scope: Scope, fname: &str, mut argv: 
                     // Bind arguments to params in the function scope
                     // We parse the args first because we can't use scope.eval after we make
                     // function scope
-                    let mut args = Vec::<(Symbol, Handle)>::new();
+                    let mut args = Vec::<(ParseTreeNode, Handle)>::new();
                     for param in &*params.clone() {
-                        args.push((param.clone(), eval(arena, scope.clone(), expect_arg())));
+                        args.push((param.clone(), eval(arena, scopeH, expect_arg())));
                     }
                     // Populate a new scope with args bound to params
-                    let mut function_scope = Scope {
-                        parent: closure_scope.own_handle,
-                    };
+                    let mut function_scope = arena.deref_scope(scopeH).new_child();
                     for param_value in args {
                         let (param, value) = param_value;
                         let symbol = param.expect_symbol();
                         function_scope.set((*symbol).to_owned(), value);
                     }
                     // Evaluate the function
-                    return eval(arena, function_scope, proc);
+                    return eval(arena, arena.add_scope(function_scope), proc);
                 }
                 _ => {
                     println!("expected function, got");
                     possible_func.print_node(3);
-                    return Arena.add_node(ParseTreeNode::Symbol(""));
+                    return arena.add_node(ParseTreeNode::Symbol(""));
                 }
             }
         }

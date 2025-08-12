@@ -29,11 +29,11 @@ fn parse_node(token_iter: &mut std::str::SplitWhitespace, arena: &mut Arena) -> 
                 // Try to parse as int; if not, treat as symbol
                 match token.parse::<i32>() {
                     Ok(ival) => {
-                        return (Arena.add_node(ParseTreeNode::Int(ival)), false);
+                        return (arena.add_node(ParseTreeNode::Int(ival)), false);
                     }
                     Err(..) => {
                         return (
-                            Arena.add_node(ParseTreeNode::Symbol(token.to_string())),
+                            arena.add_node(ParseTreeNode::Symbol(token.to_string())),
                             false,
                         );
                     }

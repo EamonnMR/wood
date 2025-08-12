@@ -7,56 +7,56 @@ struct SubArena<T> {
   memory: Vec<T>,
 }
 
-type Handle = usize;
+pub type Handle = usize;
 
 // TODO: Add garbage collection. Right now this will just leak.
 
-impl SubArena {
-  fn add(item: T) -> Handle {
-    memory.push(item);
-    return memory.size() - 1;
+impl<T> SubArena<T> {
+  fn add(self, item: T) -> Handle {
+    self.memory.push(item);
+    return self.memory.size() - 1;
   }
 
-  fn deref(handle: Handle) -> Option<&'static T>{
-    return memory.get(handle);
+  fn deref(self, handle: Handle) -> Option<&'static T>{
+    return self.memory.get(handle);
   }
 }
 
-struct Arena {
+pub struct Arena {
   scopes: SubArena<Scope>,
   nodes: SubArena<ParseTreeNode>,
 }
 
 impl Arena {
-  fn add_scope(scope: Scope) -> Handle {
-    let handle = scopes.add(scope);
+  pub fn add_scope(self, mut scope: Scope) -> Handle {
+    let handle = self.scopes.add(scope);
     scope.own_handle = handle;
     return handle;
   }
 
-  fn add_node(node: ParseTreeNode) -> Handle {
-    return nodes.add(node)
+  pub fn add_node(self, node: ParseTreeNode) -> Handle {
+    return self.nodes.add(node)
   }
 
-  fn deref_scope(handle: Handle) -> Opselftion(&'static Scope) {
-    return scopes.deref(handle);
+  pub fn deref_scope(self, handle: Handle) -> Option<&'static Scope> {
+    return self.scopes.deref(handle);
   }
 
-  fn deref_node(handle: Handle) -> Option<&'static ParseTreeNode> {
-    return nodes.deref(handle);
+  pub fn deref_node(self, handle: Handle) -> Option<&'static ParseTreeNode> {
+    return self.nodes.deref(handle);
   }
 
-  fn nilptr() -> Handle {
+  pub fn nilptr(self) -> Handle {
     return 0;
   }
 
   pub fn new() -> Self {
     let new_arena = Self {
       scopes: SubArena::new(),
-      nodes: SubArenah::new(),
+      nodes: SubArena::new(),
     };
     // Create nil ptr:
-    new_arena.nodes.add(ParseTreeNode::Nil);
+    new_arena.add_node(ParseTreeNode::Nil);
 
     return new_arena;
   }

@@ -1,5 +1,5 @@
 pub use crate::scope::Scope;
-pub use crate::scope::ScopeHandle;
+pub use crate::scope::Handle;
 
 
 pub type NodeHandleVec = Vec<Handle>;
@@ -11,9 +11,9 @@ pub enum ParseTreeNode {
     Int(i32),
     Nil,
     Function {
-        params: ScopeHandle,
-        proc: NodeHandle,
-        closure_scope: ScopeHandle,
+        params: Handle,
+        proc: Handle,
+        closure_scope: Handle,
     }
 }
 
@@ -77,7 +77,7 @@ impl ParseTreeNode {
             }
         }
     }
-    pub fn expect_list(&self) -> NodeHandleList {
+    pub fn expect_list(&self) -> NodeHandleVec {
         match &*self {
             ParseTreeNode::List(list) => {
                 return list;
@@ -85,7 +85,7 @@ impl ParseTreeNode {
             _ => {
                 println!("Expected list, got: ");
                 self.print_node(20);
-                return NodeHandleList();
+                return HandleList();
             }
         }
     }
@@ -103,7 +103,7 @@ impl ParseTreeNode {
         }
     }
 
-    pub fn expect_function(&self) -> (ScopeHandle, NodeHandle, ScopeHandle) {
+    pub fn expect_function(&self) -> (Handle, Handle, Handle) {
         match &*self {
             ParseTreeNode::Function {params, proc, closure_scope} => {
                 (params, proc, closure_scope)
