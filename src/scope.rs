@@ -1,19 +1,20 @@
 use std::collections::HashMap;
 
-pub use crate::node::{NodeHandle, ParseTreeNode};
+pub use crate::node::ParseTreeNode;
+pub use crate::arena::Handle;
 
 pub type ScopeHandle = usize;
 
 pub struct Scope {
     pub parent: Option<ScopeHandle>,
-    pub locals: HashMap<String, NodeHandle>,
+    pub locals: HashMap<String, Handle>,
     pub own_handle: ScopeHandle,
 }
 
 pub type ScoVec = Vec<Scope>;
 
 impl Scope {
-    pub fn get(&self, scopes: &mut ScoVec, key: &String) -> NodeHandle {
+    pub fn get(&self, scopes: &mut ScoVec, key: &String) -> Handle {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {

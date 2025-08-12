@@ -1,5 +1,7 @@
-pub use crate::node::{ParseTreeNode, NodeHandleList};
+pub use crate::node::{ParseTreeNode, NodeHandleVec};
 pub use crate::arena::{Arena, Handle};
+
+// TODO: Only add stuff to the arena in parse_list. Return a node by value
 
 fn preprocess_source(source: String) -> String {
     // add spaces around parens so they are tokenized
@@ -20,14 +22,13 @@ fn parse_node(token_iter: &mut std::str::SplitWhitespace, arena: &mut Arena) -> 
             // println!( "{}",  token);
 
             if token == "(" {
-                return (parse_list(token_iter), false);
+                return (parse_list(token_iter, &mut arena), false);
             } else if token == ")" {
                 return (0, true);
             } else {
                 // Try to parse as int; if not, treat as symbol
                 match token.parse::<i32>() {
                     Ok(ival) => {
-                        NodeHandleVec.
                         return (Arena.add_node(ParseTreeNode::Int(ival)), false);
                     }
                     Err(..) => {
@@ -42,17 +43,17 @@ fn parse_node(token_iter: &mut std::str::SplitWhitespace, arena: &mut Arena) -> 
     }
 }
 
-fn parse_list(token_iter: &mut std::str::SplitWhitespace) -> Handle {
-    let mut list = NodeHandleList::new();
+fn parse_list(token_iter: &mut std::str::SplitWhitespace, arena: Arena) -> Handle {
+    let mut list = NodeHandleVec::new();
     loop {
-        let (next_handle, is_terminator) = parse_node(token_iter);
+        let (next_handle, is_terminator) = parse_node(&mut token_iter, &mut arena);
         if is_terminator {
             break;
         } else {
             list.push(next_handle);
         }
     }
-    return Arena.add_node(ParseTreeNode::List(list));
+    return arena.add_node(ParseTreeNode::List(list));
 }
 
 pub fn parse(mut arena: Arena, source: String) -> Handle {

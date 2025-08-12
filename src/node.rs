@@ -4,7 +4,7 @@ pub use crate::scope::ScopeHandle;
 
 pub type NodeHandleVec = Vec<Handle>;
 
-#[derive(Finalize, Trace)]
+// #[derive(Finalize, Trace)]
 pub enum ParseTreeNode {
     Symbol(String),
     List(Vec<usize>),

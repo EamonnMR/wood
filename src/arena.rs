@@ -17,7 +17,7 @@ impl SubArena {
     return memory.size() - 1;
   }
 
-  fn deref(handle: Handle) -> Option<&T>{
+  fn deref(handle: Handle) -> Option<&'static T>{
     return memory.get(handle);
   }
 }
@@ -38,11 +38,11 @@ impl Arena {
     return nodes.add(node)
   }
 
-  fn deref_scope(handle: Handle) -> Opselftion(&Scope) {
+  fn deref_scope(handle: Handle) -> Opselftion(&'static Scope) {
     return scopes.deref(handle);
   }
 
-  fn deref_node(handle: Handle) -> Option(&ParseTreeNode) {
+  fn deref_node(handle: Handle) -> Option<&'static ParseTreeNode> {
     return nodes.deref(handle);
   }
 
@@ -52,11 +52,11 @@ impl Arena {
 
   pub fn new() -> Self {
     let new_arena = Self {
-      SubArena<Scope>::new(),
-      SubArena<ParseTreeNode>::new(),
+      scopes: SubArena::new(),
+      nodes: SubArenah::new(),
     };
     // Create nil ptr:
-    new_arena.nodes.add(ParseTreeNode::Nil::new());
+    new_arena.nodes.add(ParseTreeNode::Nil);
 
     return new_arena;
   }

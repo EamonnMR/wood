@@ -34,7 +34,8 @@ fn repl() {
             .expect("failed to read line");
         let root_node_handle = parse(&mut arena, inputline);
         let root_scope_handle = arena.add_scope(Scope::new());
-        eval(root_scope_handle, &mut arena, root_node_handle).print_node(0);
+
+        eval(root_scope_handle, &mut arena, arena.deref_node(root_node_handle)).print_node(0);
     }
 }
 
@@ -46,5 +47,5 @@ fn run_file(file: &str) {
 
     let root_node_handle = parse(&mut arena, file);
     let root_scope_handle = arena.add_scope(Scope::new());
-    eval(root_scope_handle, &mut arena, root_node_handle).print_node(0);
+    eval(root_scope_handle, &mut arena, arena.deref_node(root_node_handle)).print_node(0);
 }
