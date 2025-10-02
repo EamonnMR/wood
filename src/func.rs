@@ -6,7 +6,7 @@ use crate::arena::{Arena, Handle};
 use crate::node::{ParseTreeNode, NodeHandleVec};
 use crate::scope::Scope;
 
-pub fn function_call(mut arena: Arena, scopeH: Handle, fname: &str, mut argv: Vec<ParseTreeNode>) -> Handle {
+pub fn function_call(mut arena: Arena, scopeH: Handle, fname: &str, mut argv: Vec<Handle>) -> Handle {
     let mut args_index = argv.iter();
 
     let mut expect_arg = || -> ParseTreeNode {

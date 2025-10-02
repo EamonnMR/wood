@@ -16,10 +16,7 @@ pub fn eval(arena: Arena, scopeH: Handle, node: ParseTreeNode) -> Handle {
                 }
                 ParseTreeNode::Symbol(ref symbol) => {
                     // println!("Eval symbol: {}", symbol);
-                    match scp.get(&arena, symbol) {
-                        None => return arena.add_node(ParseTreeNode::Symbol(symbol.to_owned())),
-                        Some(nodeH) => return nodeH
-                    }
+                    scp.get(&arena, symbol)
                     // TODO: Should symbols eval to themselves if they're not in scope?
                     // return ParseTreeNode::Symbol(symbol.to_owned());
                 }
@@ -39,16 +36,25 @@ pub fn eval(arena: Arena, scopeH: Handle, node: ParseTreeNode) -> Handle {
                 ParseTreeNode::List(ref list) => {
                     if let Some((func_name, args)) = list.split_first() {
                         // TODO: Eval func_name before extracting fname - ?
-                        match **func_name {
-                            ParseTreeNode::Symbol(ref fname) => {
-                                // println!("evaluating function: {}", fname);
-                                return function_call(arena, scopeH, fname, (*args).to_vec());
+                        match arena.deref_node(*func_name) {
+
+                            None => {
+                                return arena.nilptr()
                             }
-                            _ => {
-                                // TODO: Print some sort of error
-                                println!("cannot parse func name - what is it?");
-                                func_name.print_node(0);
-                                return arena.add_node(ParseTreeNode::Symbol(""));
+
+                            some(node) => {
+                                match node {
+                                    ParseTreeNode::Symbol(ref fname) => {
+                                        // println!("evaluating function: {}", fname);
+                                        return function_call(arena, scopeH, fname, (*args).to_vec());
+                                    }
+                                    _ => {
+                                        // TODO: Print some sort of error
+                                        println!("cannot parse func name - what is it?");
+                                        func_name.print_node(0);
+                                        return arena.add_node(ParseTreeNode::Symbol(""));
+                                    }
+                                }
                             }
                         }
                     } else {
