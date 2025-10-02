@@ -47,5 +47,5 @@ fn run_file(file: &str) {
 
     let root_node_handle = parse(&mut arena, file);
     let root_scope_handle = arena.add_scope(Scope::new());
-    eval(root_scope_handle, &mut arena, arena.deref_node(root_node_handle)).print_node(0);
+    arena.deref_node(eval(arena, root_scope_handle, arena.deref_node(root_node_handle))).print_node(0);
 }

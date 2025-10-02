@@ -1,54 +1,62 @@
 use crate::func::function_call;
-use crate::scope::Scope;
+use crate::scope::{self, Scope};
 use crate::node::ParseTreeNode;
 use crate::arena::{Arena, Handle};
 
 pub fn eval(arena: Arena, scopeH: Handle, node: ParseTreeNode) -> Handle {
-    match node {
-        ParseTreeNode::Nil => {
-            // println!("Error: nil node made it into the final parse tree");
-            // Just returning something to satisfy the compiler
-            // TODO: Panic! ?
-            return arena.nilptr();
-        }
-        ParseTreeNode::Symbol(ref symbol) => {
-            // println!("Eval symbol: {}", symbol);
-            return arena.deref_scope(scopeH).get(symbol);
-            // TODO: Should symbols eval to themselves if they're not in scope?
-            // return ParseTreeNode::Symbol(symbol.to_owned());
-        }
-        ParseTreeNode::Function {
-            params: _,
-            proc: _,
-            closure_scope: _,
-        } => {
-            // Figure out the semantics here. I don't think we'd ever reach this...
-            println!("How did this function literal get eval'd We don't have function literals!");
-            return arena.nilptr();
-        }
-        ParseTreeNode::Int(_int) => {
-            //println!("Eval int: {}", int);
-            return arena.add_node(node);
-        }
-        ParseTreeNode::List(ref list) => {
-            if let Some((func_name, args)) = list.split_first() {
-                // TODO: Eval func_name before extracting fname - ?
-                match **func_name {
-                    ParseTreeNode::Symbol(ref fname) => {
-                        // println!("evaluating function: {}", fname);
-                        return function_call(arena, scopeH, fname, (*args).to_vec());
+    match arena.deref_scope(scopeH){
+        None =>return arena.nilptr(),
+        Some(scp) => {
+            match node {
+                ParseTreeNode::Nil => {
+                    // println!("Error: nil node made it into the final parse tree");
+                    // Just returning something to satisfy the compiler
+                    // TODO: Panic! ?
+                    return arena.nilptr();
+                }
+                ParseTreeNode::Symbol(ref symbol) => {
+                    // println!("Eval symbol: {}", symbol);
+                    match scp.get(&arena, symbol) {
+                        None => return arena.add_node(ParseTreeNode::Symbol(symbol.to_owned())),
+                        Some(nodeH) => return nodeH
                     }
-                    _ => {
-                        // TODO: Print some sort of error
-                        println!("cannot parse func name - what is it?");
-                        func_name.print_node(0);
+                    // TODO: Should symbols eval to themselves if they're not in scope?
+                    // return ParseTreeNode::Symbol(symbol.to_owned());
+                }
+                ParseTreeNode::Function {
+                    params: _,
+                    proc: _,
+                    closure_scope: _,
+                } => {
+                    // Figure out the semantics here. I don't think we'd ever reach this...
+                    println!("How did this function literal get eval'd We don't have function literals!");
+                    return arena.nilptr();
+                }
+                ParseTreeNode::Int(_int) => {
+                    //println!("Eval int: {}", int);
+                    return arena.add_node(node);
+                }
+                ParseTreeNode::List(ref list) => {
+                    if let Some((func_name, args)) = list.split_first() {
+                        // TODO: Eval func_name before extracting fname - ?
+                        match **func_name {
+                            ParseTreeNode::Symbol(ref fname) => {
+                                // println!("evaluating function: {}", fname);
+                                return function_call(arena, scopeH, fname, (*args).to_vec());
+                            }
+                            _ => {
+                                // TODO: Print some sort of error
+                                println!("cannot parse func name - what is it?");
+                                func_name.print_node(0);
+                                return arena.add_node(ParseTreeNode::Symbol(""));
+                            }
+                        }
+                    } else {
+                        //.TODO: Some sort of error
+                        println!("Cannot parse fname and args from.");
                         return arena.add_node(ParseTreeNode::Symbol(""));
                     }
                 }
-            } else {
-                //.TODO: Some sort of error
-                println!("Cannot parse fname and args from.");
-                return arena.add_node(ParseTreeNode::Symbol(""));
             }
         }
     }

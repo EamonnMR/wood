@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub use crate::node::ParseTreeNode;
-pub use crate::arena::Handle;
+pub use crate::arena::{Arena, Handle};
 
 
 pub struct Scope {
@@ -13,7 +13,7 @@ pub struct Scope {
 pub type ScoVec = Vec<Scope>;
 
 impl Scope {
-    pub fn get(&self, scopes: &mut ScoVec, key: &String) -> Handle {
+    pub fn get(&self, arena: &Arena, key: &String) -> Handle {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
             Some(node) => {
@@ -22,12 +22,15 @@ impl Scope {
             None => {
                 match self.parent {
                     Some(ref parent) => {
-                        return scopes[parent].borrow().get(key);
+                        match arena.deref_scope(parent) {
+                            Some(parent_scope) => parent_scope.get(key),
+                            None => return arena.nilptr()
+                        }
                     }
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return ParseTreeNode::Nil();
+                        return arena.nilptr()
                     }
                 }
             }
