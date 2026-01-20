@@ -1,5 +1,5 @@
 [package]
-edition="2018"
+edition="2024"
 name = "wood"
 version = "0.0.1"
 authors = [ "Eamonn McHugh-Roohr <eamonn.m.r@gmail.com>" ]
@@ -11,4 +11,7 @@ authors = [ "Eamonn McHugh-Roohr <eamonn.m.r@gmail.com>" ]
 [[bin]]
 name = "wood"
 path = "src/main.rs"
+
+[dependencies]
+slotmap = "1.1.1"
 
