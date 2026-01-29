@@ -5,8 +5,9 @@ use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
 
-impl Scope <'_> {
-    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+use crate::arena::{Arena};
+impl Scope{
+    pub fn function_call(&mut self, fname: &str, arena: &mut Arena, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
         let mut args_index = argv.iter();
 
         let mut expect_arg = || -> ParseTreeNode {
@@ -28,9 +29,9 @@ impl Scope <'_> {
                 // println!("plus");
 
                 return ParseTreeNode::Int(
-                    expect_int(self.eval(&expect_arg()))
+                    expect_int(self.eval(arena, &expect_arg()))
                     +
-                    expect_int(self.eval(&expect_arg()))
+                    expect_int(self.eval(arena, &expect_arg()))
                 );
             }
             
@@ -48,7 +49,7 @@ impl Scope <'_> {
                             return last_value;
                         }
                         _ => {
-                            last_value = self.eval(&arg);
+                            last_value = self.eval(arena, &arg);
                         }
                     }
                 }
@@ -57,7 +58,7 @@ impl Scope <'_> {
             "define" => {
                 // println!("define");
                 let symbol = expect_symbol(expect_arg());
-                let value = self.eval(&expect_arg());
+                let value = self.eval(arena, &expect_arg());
                 self.set(
                     symbol.to_owned(),
                     value,
@@ -71,7 +72,7 @@ impl Scope <'_> {
                 println!("(special builtin to debug)");
                 for (key, value) in self.locals.iter(){
                     println!("{}: ", key);
-                    value.print_node(20);
+                    // value.print_node(20);
                 }
                 return ParseTreeNode::Nil;
             }
@@ -89,7 +90,7 @@ impl Scope <'_> {
             }
 
             _ => {
-                let possible_func = self.get(&String::from(fname));
+                let possible_func = self.get(arena, &String::from(fname));
                 match possible_func{
                     ParseTreeNode::Function { params, proc } => {
                         // Bind arguments to params in the function scope
@@ -97,7 +98,7 @@ impl Scope <'_> {
                         // function scope
                         let mut args = Vec::<(ParseTreeNode, ParseTreeNode)>::new();
                         for param in params {
-                            args.push((param, self.eval(&expect_arg())))
+                            args.push((param, self.eval(arena, &expect_arg())))
                         }
                         // Populate a new scope with args bound to params
                         let mut function_scope = self.new_child();
@@ -110,7 +111,7 @@ impl Scope <'_> {
                             );
                         }
                         // Evaluate the function
-                        return function_scope.eval( &proc );
+                        return function_scope.eval( arena,&proc );
                     }
                     _ => {
                         println!( "expected function, got");

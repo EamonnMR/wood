@@ -1,46 +1,47 @@
 use std::collections::HashMap;
 
-pub use crate::node::ParseTreeNode;
+use crate::arena::{ScopeHandle, NodeHandle, Arena};
 
-pub struct Scope <'a>{
-    pub parent: Option<&'a Scope<'a>>,
-    pub locals: HashMap<String, ParseTreeNode>,
+pub struct Scope{
+    pub parent: Option<ScopeHandle>,
+    pub locals: HashMap<String, NodeHandle>,
 }
 
-impl Scope <'_> {
-    pub fn get(&self, key: &String) -> ParseTreeNode {
+impl Scope{
+    pub fn get(&self, arena: &mut Arena, key: &String) -> NodeHandle {
         // gets a node from the scope, or Nil if it is not found.
         match self.locals.get(key) {
-            Some(node) => {
-                return node.to_owned();
+            Some(handle) => {
+                return *handle;
             }
             None  => {
                 match self.parent {
                     Some(ref parent) => {
-                        return parent.get(key);
+                        let parent_scope: &mut Scope = arena.deref_scope(* parent);
+                        return parent_scope.get(arena, key);
                     }
                     None => {
                         // bad bad very not good
                         // we need better nil handling
-                        return ParseTreeNode::Nil;
+                        return arena.nilptr();
                     }
                 }
             }
         }
     }
 
-    pub fn set(&mut self, key: String, value: ParseTreeNode){
+    pub fn set(&mut self, key: String, value: NodeHandle){
         self.locals.insert(key, value);
     }
 
-    pub fn new() -> Scope <'static> {
+    pub fn new() -> Scope {
         Scope {
             parent: None,
             locals: HashMap::new()
         }
     }
 
-    pub fn new_child<'a>(& 'a mut self) -> Scope<'a> {
+    pub fn new_child<'a>(& 'a mut self) -> Scope {
         Scope {
             parent: Some(self),
             locals: HashMap::new()

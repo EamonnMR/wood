@@ -1,20 +1,22 @@
 use crate::scope::Scope;
 use crate::node::ParseTreeNode;
 
-impl Scope <'_>{
-    pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
+use crate::arena::{Arena};
+
+impl Scope{
+    pub fn eval(&mut self, arena: &mut Arena, node: &ParseTreeNode) -> ParseTreeNode {
         match *node{
             ParseTreeNode::Nil=> {
                 // println!("Error: nil node made it into the final parse tree");
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
                 return ParseTreeNode::Nil;
-            }
+            }:
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("Eval symbol: {}", symbol);
-                return self.get(symbol);
+                // return arena.deref_node(self.get(arena, symbol));
                 // TODO: Should symbols eval to themselves if they're not in scope?
-                // return ParseTreeNode::Symbol(symbol.to_owned());
+                return ParseTreeNode::Symbol(symbol.to_owned());
             }
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
@@ -31,7 +33,7 @@ impl Scope <'_>{
                     match *func_name {
                         ParseTreeNode::Symbol( ref fname ) => {
                             // println!("evaluating function: {}", fname);
-                            return self.function_call(fname, args.to_vec());
+                            return self.function_call(fname, arena, args.to_vec());
                         }
                         _ => {
                             // TODO: Print some sort of error
