@@ -4,6 +4,7 @@ use crate::node::expect_int;
 use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
+use std::cell::RefCell;
 
 use crate::arena::{Arena};
 impl Scope{
@@ -59,9 +60,10 @@ impl Scope{
                 // println!("define");
                 let symbol = expect_symbol(expect_arg());
                 let value = self.eval(arena, &expect_arg());
+                let handle = arena.add_node(value);
                 self.set(
                     symbol.to_owned(),
-                    value,
+                    handle,
                 );
 
                 return ParseTreeNode::Symbol( symbol.to_owned());

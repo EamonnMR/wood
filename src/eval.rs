@@ -11,10 +11,10 @@ impl Scope{
                 // Just returning something to satisfy the compiler
                 // TODO: Panic! ?
                 return ParseTreeNode::Nil;
-            }:
+            }
             ParseTreeNode::Symbol(ref symbol) => {
                 // println!("Eval symbol: {}", symbol);
-                // return arena.deref_node(self.get(arena, symbol));
+                // return arena.deref_node(self.get(arena, symbol)).borrow_mut();
                 // TODO: Should symbols eval to themselves if they're not in scope?
                 return ParseTreeNode::Symbol(symbol.to_owned());
             }

@@ -17,7 +17,7 @@ impl Scope{
             None  => {
                 match self.parent {
                     Some(ref parent) => {
-                        let parent_scope: &mut Scope = arena.deref_scope(* parent);
+                        let parent_scope = arena.deref_scope(* parent).borrow_mut();
                         return parent_scope.get(arena, key);
                     }
                     None => {
