@@ -27,14 +27,13 @@ fn main() {
 fn repl() {
     // REPL
     println!("Wood 0.0.1");
-    let mut arena = Arena::new();
     let mut root_scope: Scope = Scope::new();
     loop {
         let mut inputline = String::new();
         io::stdin().read_line(&mut inputline)
             .expect("failed to read line");
         let root_node = parse ( inputline );
-        root_scope.eval(&mut arena, &root_node).print_node(0);
+        root_scope.eval(&root_node).print_node(0);
     }
 }
 
@@ -43,6 +42,5 @@ fn run_file( file: &str ){
     let file = String::from_utf8_lossy( file_bytes ).to_string();
     let root_node = parse( file );
     let mut root_scope = Scope::new();
-    let mut arena = Arena::new();
-    root_scope.eval(&mut arena, &root_node ).print_node(0);
+    root_scope.eval(&root_node ).print_node(0);
 }

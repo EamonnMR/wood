@@ -1,10 +1,8 @@
 use crate::scope::Scope;
 use crate::node::ParseTreeNode;
 
-use crate::arena::{Arena};
-
 impl Scope{
-    pub fn eval(&mut self, arena: &mut Arena, node: &ParseTreeNode) -> ParseTreeNode {
+    pub fn eval(&mut self, node: &ParseTreeNode) -> ParseTreeNode {
         match *node{
             ParseTreeNode::Nil=> {
                 // println!("Error: nil node made it into the final parse tree");
@@ -20,7 +18,7 @@ impl Scope{
             }
             ParseTreeNode::Function { params: _, proc: _ } => {
                 // Figure out the semantics here. I don't think we'd ever reach this...
-                //println!("How did this function literal get eval'd We don't have function literals!");
+                println!("How did this function literal get eval'd We don't have function literals!");
                 return ParseTreeNode::Nil;
             }
             ParseTreeNode::Int(int) => {
@@ -33,7 +31,7 @@ impl Scope{
                     match *func_name {
                         ParseTreeNode::Symbol( ref fname ) => {
                             // println!("evaluating function: {}", fname);
-                            return self.function_call(fname, arena, args.to_vec());
+                            return self.function_call(fname, args.to_vec());
                         }
                         _ => {
                             // TODO: Print some sort of error

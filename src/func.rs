@@ -1,14 +1,15 @@
 use std::iter::Iterator;
+use crate::arena::{NodeHandle, ScopeHandle, mutate_scope, mutate_scope_with_eval};
 use crate::node::ParseTreeNode;
 use crate::node::expect_int;
 use crate::node::expect_list;
 use crate::node::expect_symbol;
 use crate::scope::Scope;
-use std::cell::RefCell;
 
-use crate::arena::{Arena};
+use crate::arena::{ARENA, add_node};
+
 impl Scope{
-    pub fn function_call(&mut self, fname: &str, arena: &mut Arena, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
+    pub fn function_call(&mut self, fname: &str, argv: Vec<ParseTreeNode>) -> ParseTreeNode {
         let mut args_index = argv.iter();
 
         let mut expect_arg = || -> ParseTreeNode {
@@ -30,9 +31,9 @@ impl Scope{
                 // println!("plus");
 
                 return ParseTreeNode::Int(
-                    expect_int(self.eval(arena, &expect_arg()))
+                    expect_int(self.eval(&expect_arg()))
                     +
-                    expect_int(self.eval(arena, &expect_arg()))
+                    expect_int(self.eval(&expect_arg()))
                 );
             }
             
@@ -50,7 +51,7 @@ impl Scope{
                             return last_value;
                         }
                         _ => {
-                            last_value = self.eval(arena, &arg);
+                            last_value = self.eval(&arg);
                         }
                     }
                 }
@@ -59,8 +60,8 @@ impl Scope{
             "define" => {
                 // println!("define");
                 let symbol = expect_symbol(expect_arg());
-                let value = self.eval(arena, &expect_arg());
-                let handle = arena.add_node(value);
+                let value = self.eval(&expect_arg());
+                let handle = add_node(value);
                 self.set(
                     symbol.to_owned(),
                     handle,
@@ -92,35 +93,39 @@ impl Scope{
             }
 
             _ => {
-                let possible_func = self.get(arena, &String::from(fname));
-                match possible_func{
-                    ParseTreeNode::Function { params, proc } => {
-                        // Bind arguments to params in the function scope
-                        // We parse the args first because we can't use self.eval after we make
-                        // function scope
-                        let mut args = Vec::<(ParseTreeNode, ParseTreeNode)>::new();
-                        for param in params {
-                            args.push((param, self.eval(arena, &expect_arg())))
+                let possible_func_handle:  NodeHandle = self.get(&String::from(fname));
+                return ARENA.with_borrow( | arena | {
+                    match *arena.deref_node(possible_func_handle).borrow(){
+                        ParseTreeNode::Function { params, proc } => {
+                            // Bind arguments to params in the function scope
+                            // We parse the args first because we can't use self.eval after we make
+                            // function scope
+                            let mut args = Vec::<(ParseTreeNode, ParseTreeNode)>::new();
+                            for param in params {
+                                args.push((param, self.eval( &expect_arg())))
+                            }
+                            // Populate a new scope with args bound to params
+                            let function_scope_handle: ScopeHandle = self.new_child();
+                            for param_value in args {
+                                let (param, value) = param_value;
+                                let value_handle = add_node(value);
+                                let symbol = expect_symbol(param);
+                                mutate_scope(function_scope_handle, |&mut scope| {
+                                    scope.set(
+                                        symbol.to_owned(),
+                                        value_handle,
+                                    );
+                                });
+                            }
+                            return mutate_scope_with_eval(function_scope_handle, &proc);
                         }
-                        // Populate a new scope with args bound to params
-                        let mut function_scope = self.new_child();
-                        for param_value in args {
-                            let (param, value) = param_value;
-                            let symbol = expect_symbol(param);
-                            function_scope.set(
-                                symbol.to_owned(),
-                                value,
-                            );
+                        _ => {
+                            println!( "expected function, got");
+                            possible_func.print_node( 3 );
+                            return ParseTreeNode::Symbol(String::from(""));
                         }
-                        // Evaluate the function
-                        return function_scope.eval( arena,&proc );
                     }
-                    _ => {
-                        println!( "expected function, got");
-                        possible_func.print_node( 3 );
-                        return ParseTreeNode::Symbol(String::from(""));
-                    }
-                }
+                });
             }
         }
     }
