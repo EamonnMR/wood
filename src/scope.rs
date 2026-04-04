@@ -47,7 +47,7 @@ impl Scope{
 
     // TODO: This is all messed up.
     // Scopes need to know their handle
-    pub fn new_child<'a>(& 'a mut self) -> ScopeHandle {
+    pub fn new_child(&self) -> ScopeHandle {
         let new_scope = Scope {
             parent: self.handle,
             locals: HashMap::new(),

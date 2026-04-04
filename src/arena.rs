@@ -75,7 +75,7 @@ pub fn mutate_scope_with_eval(handle: ScopeHandle, proc: &ParseTreeNode) -> Pars
   return ARENA.with(|arena| {
     match arena.borrow_mut().scopes.detach(handle) {
       None => {
-        return arena.borrow().nullptr;
+        return ParseTreeNode::Nil;
       },
       Some(scope_cell) => {
         let node = scope_cell.borrow_mut().eval(proc);
@@ -97,6 +97,24 @@ pub fn mutate_node(handle: NodeHandle, inner: impl Fn(&mut ParseTreeNode)){
     }
   });
 }
+
+pub fn mutate_node_function<F>(handle: NodeHandle, inner: &mut F) -> ParseTreeNode
+  where
+    F: FnMut(&mut ParseTreeNode) -> ParseTreeNode{
+  return ARENA.with_borrow_mut(|arena| {
+    match arena.nodes.detach(handle) {
+      None => {
+        return ParseTreeNode::Nil;
+      },
+      Some(node_cell) => {
+        let return_val: ParseTreeNode = inner(&mut node_cell.borrow_mut());
+        arena.nodes.reattach(handle, node_cell);
+        return return_val;
+      }
+    }
+  });
+}
+
 
 pub fn add_scope(scope: Scope) -> ScopeHandle {
   return ARENA.with_borrow_mut(|arena| {
